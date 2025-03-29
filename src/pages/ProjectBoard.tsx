@@ -16,6 +16,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
 import { format } from "date-fns";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Types
 interface Task {
@@ -406,9 +407,8 @@ const ProjectBoard: React.FC = () => {
             .find(([_, task]) => task.title === taskTitle)?.[0];
             
           if (taskId) {
-            // Delegate to the delete task function
             deleteTask(taskId);
-            return; // The deleteTask function already adds an AI response
+            return;
           }
         }
         
@@ -416,13 +416,6 @@ const ProjectBoard: React.FC = () => {
           id: `msg-${Date.now()}`,
           sender: "ai",
           text: "I couldn't find that task. Could you specify which task you want to delete?",
-          timestamp: new Date(),
-        };
-      } else if (lowerMessage.includes("progress") || lowerMessage.includes("update")) {
-        aiResponse = {
-          id: `msg-${Date.now()}`,
-          sender: "ai",
-          text: "To update a task's progress, you can drag it to a different column or use the progress slider on the task card.",
           timestamp: new Date(),
         };
       } else {
@@ -817,17 +810,18 @@ const ProjectBoard: React.FC = () => {
                           {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-700">
+                      <PopoverContent className="w-auto p-0 bg-black/80 border-white/10">
                         <CalendarComponent
                           mode="single"
                           selected={selectedDate}
-                          onSelect={(date: Date | undefined) => {
+                          onSelect={(date) => {
+                            setSelectedDate(date);
                             if (date) {
-                              setSelectedDate(date);
+                              setNewTaskDeadline(format(date, "yyyy-MM-dd"));
                             }
                           }}
                           initialFocus
-                          className="bg-gray-800 text-white"
+                          className="p-3 pointer-events-auto"
                         />
                       </PopoverContent>
                     </Popover>
@@ -838,25 +832,257 @@ const ProjectBoard: React.FC = () => {
                       id="task-priority"
                       value={newTaskPriority}
                       onChange={(e) => setNewTaskPriority(e.target.value as "low" | "medium" | "high")}
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                      className="flex h-10 w-full rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                     >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
+                      <option value="low" className="bg-black text-white">Low</option>
+                      <option value="medium" className="bg-black text-white">Medium</option>
+                      <option value="high" className="bg-black text-white">High</option>
                     </select>
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit" onClick={() => addNewTask()}>
-                    Create Task
-                  </Button>
+                  <Button onClick={() => addNewTask()} className="bg-white/20 hover:bg-white/30 text-white">Create Task</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
+            <Button 
+              onClick={() => setIsTimelineView(!isTimelineView)}
+              variant="outline" 
+              className="bg-white/10 hover:bg-white/20 text-white border-white/20"
+            >
+              {isTimelineView ? (
+                <>
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  Board View
+                </>
+              ) : (
+                <>
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  Timeline View
+                </>
+              )}
+            </Button>
+            <Drawer>
+              <DrawerTrigger asChild>
+                <Button 
+                  size="icon" 
+                  className="bg-white/20 hover:bg-white/30 text-white border-white/20"
+                  onClick={() => setIsChatOpen(true)}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="backdrop-blur-xl bg-gradient-to-b from-black/40 to-black/60 text-slate-100 border-t border-white/10">
+                <DrawerHeader className="border-b border-white/10 pb-4">
+                  <DrawerTitle className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                        <Zap className="h-6 w-6 text-white" />
+                      </div>
+                      {isAiSpeaking && (
+                        <motion.div 
+                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full"
+                          animate={{
+                            scale: [1, 1.2, 1],
+                            opacity: [1, 0.7, 1]
+                          }}
+                          transition={{
+                            duration: 1.5,
+                            repeat: Infinity,
+                            ease: "easeInOut"
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg">PMAI Assistant</h3>
+                      <p className="text-xs text-slate-400">Project Management AI</p>
+                    </div>
+                    {isAiSpeaking && (
+                      <motion.div 
+                        className="flex items-center gap-1 ml-2 bg-white/10 px-2 py-1 rounded-full"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                      >
+                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                        <span className="text-xs text-green-500">Active</span>
+                      </motion.div>
+                    )}
+                  </DrawerTitle>
+                </DrawerHeader>
+                <div className="px-4 py-4 flex flex-col h-[calc(100vh-100px)]">
+                  <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+                    <AnimatePresence>
+                      {chatMessages.map((message) => (
+                        <motion.div
+                          key={message.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          className={`flex items-end gap-2 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+                        >
+                          {message.sender === "ai" && (
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                                <Zap className="h-4 w-4 text-white" />
+                              </div>
+                              <span className="text-[10px] text-slate-400">PMAI</span>
+                            </div>
+                          )}
+                          <motion.div
+                            className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+                              message.sender === "user"
+                                ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-br-none"
+                                : "bg-gradient-to-r from-white/20 to-white/10 text-slate-100 rounded-bl-none"
+                            }`}
+                            initial={{ scale: 0.95 }}
+                            animate={{ scale: 1 }}
+                          >
+                            <p className="text-sm">{message.text}</p>
+                            <p className="mt-1 text-right text-xs opacity-70">
+                              {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          </motion.div>
+                          {message.sender === "user" && (
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                              <span className="text-sm font-semibold text-white">U</span>
+                            </div>
+                          )}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                    <div ref={messageEndRef} />
+                  </div>
+
+                  {showAiTaskForm && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      className="mb-4 bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-sm rounded-lg border border-white/20 shadow-xl p-4"
+                    >
+                      <h3 className="text-lg font-medium mb-4 text-white flex items-center">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create New Task
+                      </h3>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="ai-task-title" className="text-white block mb-1.5">Title</Label>
+                          <Input
+                            id="ai-task-title"
+                            value={aiTaskData.title}
+                            onChange={(e) => setAiTaskData(prev => ({ ...prev, title: e.target.value }))}
+                            className="bg-white/20 border-white/20 text-white placeholder:text-white/60"
+                            placeholder="Enter task title"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="ai-task-description" className="text-white block mb-1.5">Description</Label>
+                          <Input
+                            id="ai-task-description"
+                            value={aiTaskData.description}
+                            onChange={(e) => setAiTaskData(prev => ({ ...prev, description: e.target.value }))}
+                            className="bg-white/20 border-white/20 text-white placeholder:text-white/60"
+                            placeholder="Enter task description"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="ai-task-deadline" className="text-white block mb-1.5">Deadline</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal",
+                                  !aiTaskData.deadline && "text-white/60",
+                                  "bg-white/20 border-white/20 text-white"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                {aiTaskData.deadline ? format(new Date(aiTaskData.deadline), "PPP") : <span>Pick a date</span>}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 bg-black/80 border-white/20">
+                              <CalendarComponent
+                                mode="single"
+                                selected={aiTaskData.deadline ? new Date(aiTaskData.deadline) : undefined}
+                                onSelect={(date) => {
+                                  if (date) {
+                                    setAiTaskData(prev => ({ ...prev, deadline: format(date, "yyyy-MM-dd") }));
+                                  }
+                                }}
+                                initialFocus
+                                className="bg-black/80 text-white"
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                        <div>
+                          <Label htmlFor="ai-task-priority" className="text-white block mb-1.5">Priority</Label>
+                          <select
+                            id="ai-task-priority"
+                            value={aiTaskData.priority}
+                            onChange={(e) => setAiTaskData(prev => ({ ...prev, priority: e.target.value as "low" | "medium" | "high" }))}
+                            className="w-full h-10 rounded-md border border-white/20 bg-white/20 px-3 py-2 text-sm text-white"
+                          >
+                            <option value="low" className="bg-black text-white">Low</option>
+                            <option value="medium" className="bg-black text-white">Medium</option>
+                            <option value="high" className="bg-black text-white">High</option>
+                          </select>
+                        </div>
+                        <div className="flex gap-2 pt-2">
+                          <Button 
+                            onClick={() => setShowAiTaskForm(false)}
+                            className="flex-1 bg-white/20 hover:bg-white/30 text-white"
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            onClick={() => {
+                              addNewTask(aiTaskData.title, aiTaskData.description, aiTaskData.deadline, aiTaskData.priority);
+                              setShowAiTaskForm(false);
+                            }}
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            Create Task
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  <div className="flex items-center space-x-2 pt-4 border-t border-white/10">
+                    <Input
+                      value={currentMessage}
+                      onChange={(e) => setCurrentMessage(e.target.value)}
+                      placeholder="Ask AI to add, update or delete tasks..."
+                      className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/40 rounded-full px-6"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          sendMessage();
+                        }
+                      }}
+                    />
+                    <Button 
+                      onClick={sendMessage}
+                      size="icon"
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-full"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </DrawerContent>
+            </Drawer>
           </div>
         </div>
-        
-        {isTimelineView ? renderTimelineView() : renderBoardView()}
+
+        <div className="mt-8 bg-white/5 backdrop-blur-md shadow-xl rounded-xl overflow-hidden border border-white/10">
+          <div className="p-6">
+            {isTimelineView ? renderTimelineView() : renderBoardView()}
+          </div>
+        </div>
       </main>
     </div>
   );
