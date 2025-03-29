@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from "react";
 
 const featuresData = [
@@ -112,20 +111,19 @@ const Features: React.FC = () => {
               Features
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight reveal stagger-1">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight reveal">
             Intelligent Project Management
           </h2>
-          <p className="text-lg text-muted-foreground reveal stagger-2">
+          <p className="text-lg text-muted-foreground reveal">
             Our AI-powered platform streamlines your workflow with smart features designed to reduce overhead and increase productivity.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featuresData.map((feature, index) => (
+          {featuresData.map((feature) => (
             <div 
               key={feature.id} 
-              className="bg-white border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-300 reveal hover-lift"
-              style={{ transitionDelay: `${0.1 * (index + 1)}s` }}
+              className="bg-white border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-300 reveal"
             >
               <div className="w-12 h-12 rounded-md bg-primary/10 flex items-center justify-center text-primary mb-4">
                 {feature.icon}

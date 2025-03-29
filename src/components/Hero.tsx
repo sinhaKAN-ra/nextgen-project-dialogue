@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from "react";
 
 const Hero: React.FC = () => {
@@ -26,7 +25,7 @@ const Hero: React.FC = () => {
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden pt-20 pb-16">
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-blue-50 to-white opacity-50 z-0"></div>
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-blue-500 to-purple-600 opacity-50 z-0"></div>
       
       {/* Animated background elements */}
       <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float"></div>
@@ -48,7 +47,7 @@ const Hero: React.FC = () => {
                   Project Management
                 </span>
               </h1>
-              <p className="text-lg text-muted-foreground max-w-[600px] reveal stagger-1">
+              <p className="text-lg text-white/70 max-w-[600px] reveal stagger-1">
                 Revolutionize your workflow with our intelligent project assistant that understands requirements, creates tasks, and communicates with your team.
               </p>
             </div>
@@ -62,7 +61,7 @@ const Hero: React.FC = () => {
               </button>
             </div>
             
-            <p className="text-sm text-muted-foreground reveal stagger-3">
+            <p className="text-sm text-white/70 reveal stagger-3">
               Currently in private beta with selected partners
             </p>
           </div>

@@ -737,13 +737,9 @@ const ProjectBoard: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[conic-gradient(at_left,_var(--tw-gradient-stops))] from-rose-500 to-indigo-700 bg-blend-soft-light">
-      <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]" />
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-xl" />
-      
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 to-blue-900">
       <Header />
-      
-      <main className="container relative z-10 mx-auto px-4 py-20">
+      <main className="container mx-auto px-4 py-20">
         <div className="flex flex-col space-y-4 md:flex-row md:items-center md:justify-between md:space-y-0">
           <div>
             <h1 className="text-3xl font-bold text-white">Project Vision Board</h1>

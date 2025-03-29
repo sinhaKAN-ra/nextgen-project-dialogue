@@ -1,4 +1,3 @@
-
 import React from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -16,13 +15,13 @@ const GetStarted = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4 reveal">
             Ready to Transform Your Project Management?
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto reveal stagger-1">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto reveal">
             Join thousands of teams who are already using our AI-powered platform
             to accelerate their workflows.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal stagger-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
           <div className="bg-card rounded-2xl p-6 shadow-sm hover-lift">
             <div className="bg-primary/10 text-primary rounded-full w-12 h-12 flex items-center justify-center mb-4">
               <span className="font-bold text-lg">1</span>
@@ -56,7 +55,7 @@ const GetStarted = () => {
           </div>
         </div>
 
-        <div className="mt-12 text-center reveal stagger-3">
+        <div className="mt-12 text-center reveal">
           <Link to="/project-board">
             <Button size="lg" className="px-8 py-6 text-base">
               Try Demo Board <ArrowRight className="ml-2" />
