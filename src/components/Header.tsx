@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
 
 const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -28,30 +29,38 @@ const Header: React.FC = () => {
     >
       <div className="container mx-auto flex items-center justify-between px-4 md:px-6">
         <div className="flex items-center">
-          <span className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">
-            ProjectAI
-          </span>
+          <Link to="/">
+            <span className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-600">
+              ProjectAI
+            </span>
+          </Link>
         </div>
 
         <nav className="hidden md:flex space-x-8">
           <a
-            href="#features"
+            href="/#features"
             className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
           >
             Features
           </a>
           <a
-            href="#workflow"
+            href="/#workflow"
             className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
           >
             How It Works
           </a>
           <a
-            href="#get-started"
+            href="/#get-started"
             className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
           >
             Get Started
           </a>
+          <Link
+            to="/project-board"
+            className="text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+          >
+            Demo Board
+          </Link>
         </nav>
 
         <div className="flex items-center space-x-4">
