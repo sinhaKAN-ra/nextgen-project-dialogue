@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Calendar, Clock, Plus, Edit, Trash2, MessageCircle, Filter, Search, Send, ChevronRight, Zap, BarChart3, MoreVertical, Calendar as CalendarIcon, XCircle } from "lucide-react";
@@ -149,7 +148,7 @@ const initialChatMessages: ChatMessage[] = [
   {
     id: "msg-1",
     sender: "ai",
-    text: "Hello! I'm your AI project assistant. How can I help with your tasks today?",
+    text: "Hello! I'm PMAI, your Project Management AI assistant. How can I help with your tasks today?",
     timestamp: new Date(Date.now() - 60000),
   },
 ];
@@ -166,6 +165,14 @@ const ProjectBoard: React.FC = () => {
   const [currentMessage, setCurrentMessage] = useState("");
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isTimelineView, setIsTimelineView] = useState(false);
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
+  const [showAiTaskForm, setShowAiTaskForm] = useState(false);
+  const [aiTaskData, setAiTaskData] = useState({
+    title: "",
+    description: "",
+    priority: "medium" as "low" | "medium" | "high",
+    deadline: ""
+  });
   const messageEndRef = useRef<HTMLDivElement>(null);
   
   // Auto-scroll chat to bottom when new messages arrive
@@ -227,17 +234,17 @@ const ProjectBoard: React.FC = () => {
     }
   };
 
-  const addNewTask = () => {
-    if (newTaskTitle.trim() === "") return;
+  const addNewTask = (title = newTaskTitle, description = newTaskDescription, deadline = newTaskDeadline, priority = newTaskPriority) => {
+    if (title.trim() === "") return;
     
     // Create new task
     const newTaskId = `task-${Date.now()}`;
     const newTask: Task = {
       id: newTaskId,
-      title: newTaskTitle,
-      description: newTaskDescription,
-      deadline: newTaskDeadline || format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
-      priority: newTaskPriority,
+      title,
+      description,
+      deadline: deadline || format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
+      priority,
       assignee: {
         name: "Unassigned",
       },
@@ -270,16 +277,24 @@ const ProjectBoard: React.FC = () => {
     setNewTaskDeadline("");
     setNewTaskPriority("medium");
     setSelectedDate(undefined);
+    setAiTaskData({
+      title: "",
+      description: "",
+      priority: "medium",
+      deadline: ""
+    });
+    setShowAiTaskForm(false);
 
     // Add AI response about the new task
     const aiResponse: ChatMessage = {
       id: `msg-${Date.now()}`,
       sender: "ai",
-      text: `Great! I've added "${newTaskTitle}" to your To Do list. Need help getting started with this task?`,
+      text: `Great! I've added "${title}" to your To Do list. Need help getting started with this task?`,
       timestamp: new Date(),
     };
     
     setChatMessages(prev => [...prev, aiResponse]);
+    simulateAiSpeaking();
   };
 
   const deleteTask = (taskId: string) => {
@@ -323,6 +338,7 @@ const ProjectBoard: React.FC = () => {
     };
     
     setChatMessages(prev => [...prev, aiResponse]);
+    simulateAiSpeaking();
   };
 
   const updateTaskProgress = (taskId: string, progress: number) => {
@@ -336,6 +352,17 @@ const ProjectBoard: React.FC = () => {
         },
       },
     });
+  };
+
+  const simulateAiSpeaking = () => {
+    setIsAiSpeaking(true);
+    setTimeout(() => {
+      setIsAiSpeaking(false);
+    }, 2000);
+  };
+
+  const handleAiTaskSubmit = () => {
+    addNewTask(aiTaskData.title, aiTaskData.description, aiTaskData.deadline, aiTaskData.priority);
   };
 
   const sendMessage = () => {
@@ -360,55 +387,13 @@ const ProjectBoard: React.FC = () => {
       const lowerMessage = currentMessage.toLowerCase();
       
       if (lowerMessage.includes("add task") || lowerMessage.includes("create task")) {
-        // Extract task details using simple parsing
-        const taskTitle = lowerMessage.includes("called") 
-          ? lowerMessage.split("called")[1].split(" with")[0].trim()
-          : "New Task";
-          
-        const priority = lowerMessage.includes("high priority") 
-          ? "high" 
-          : lowerMessage.includes("low priority") 
-            ? "low" 
-            : "medium";
-        
-        // Create a new task
-        const newTaskId = `task-${Date.now()}`;
-        const newTask: Task = {
-          id: newTaskId,
-          title: taskTitle,
-          description: "AI generated task",
-          deadline: format(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), "yyyy-MM-dd"),
-          priority,
-          assignee: {
-            name: "Unassigned",
-          },
-          comments: 0,
-          progress: 0,
-        };
-        
-        // Add to first column
-        const firstColumnId = boardData.columnOrder[0];
-        const firstColumn = boardData.columns[firstColumnId];
-        
-        setBoardData(prev => ({
-          ...prev,
-          tasks: {
-            ...prev.tasks,
-            [newTaskId]: newTask,
-          },
-          columns: {
-            ...prev.columns,
-            [firstColumnId]: {
-              ...firstColumn,
-              taskIds: [...firstColumn.taskIds, newTaskId],
-            },
-          },
-        }));
+        // Show task creation form
+        setShowAiTaskForm(true);
         
         aiResponse = {
           id: `msg-${Date.now()}`,
           sender: "ai",
-          text: `I've added a new ${priority} priority task "${taskTitle}" to your To Do list.`,
+          text: "I'd be happy to help you create a task. Please fill out the form I've opened for you.",
           timestamp: new Date(),
         };
       } else if (lowerMessage.includes("delete") && lowerMessage.includes("task")) {
@@ -444,12 +429,13 @@ const ProjectBoard: React.FC = () => {
         aiResponse = {
           id: `msg-${Date.now()}`,
           sender: "ai",
-          text: "I'm here to help manage your tasks. You can ask me to add or delete tasks, or get updates on your project progress.",
+          text: "I'm PMAI, here to help manage your tasks. You can ask me to add or delete tasks, or get updates on your project progress.",
           timestamp: new Date(),
         };
       }
       
       setChatMessages(prev => [...prev, aiResponse]);
+      simulateAiSpeaking();
     }, 1000);
   };
 
@@ -831,195 +817,3 @@ const ProjectBoard: React.FC = () => {
                           {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 bg-black/80 border-white/10">
-                        <CalendarComponent
-                          mode="single"
-                          selected={selectedDate}
-                          onSelect={(date) => {
-                            setSelectedDate(date);
-                            if (date) {
-                              setNewTaskDeadline(format(date, "yyyy-MM-dd"));
-                            }
-                          }}
-                          initialFocus
-                          className="p-3 pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="task-priority" className="text-white">Priority</Label>
-                    <select
-                      id="task-priority"
-                      value={newTaskPriority}
-                      onChange={(e) => setNewTaskPriority(e.target.value as "low" | "medium" | "high")}
-                      className="flex h-10 w-full rounded-md border border-white/20 bg-white/10 px-3 py-2 text-sm text-white ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    >
-                      <option value="low" className="bg-black text-white">Low</option>
-                      <option value="medium" className="bg-black text-white">Medium</option>
-                      <option value="high" className="bg-black text-white">High</option>
-                    </select>
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button onClick={addNewTask} className="bg-white/20 hover:bg-white/30 text-white">Create Task</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-            
-            <Button 
-              onClick={() => setIsTimelineView(!isTimelineView)}
-              variant="outline" 
-              className="bg-white/10 hover:bg-white/20 text-white border-white/20"
-            >
-              {isTimelineView ? (
-                <>
-                  <BarChart3 className="mr-2 h-4 w-4" />
-                  Board View
-                </>
-              ) : (
-                <>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  Timeline View
-                </>
-              )}
-            </Button>
-            
-            <Drawer>
-              <DrawerTrigger asChild>
-                <Button 
-                  size="icon" 
-                  className="bg-white/20 hover:bg-white/30 text-white border-white/20"
-                  onClick={() => setIsChatOpen(true)}
-                >
-                  <MessageCircle className="h-4 w-4" />
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent className="backdrop-blur-xl bg-black/70 text-white border-t border-white/10">
-                <DrawerHeader className="border-b border-white/10 pb-4">
-                  <DrawerTitle className="flex items-center">
-                    <Zap className="mr-2 h-5 w-5 text-blue-400" />
-                    AI Project Assistant
-                  </DrawerTitle>
-                </DrawerHeader>
-                <div className="px-4 pb-2">
-                  <div className="h-[40vh] overflow-y-auto py-4 space-y-4">
-                    {chatMessages.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${
-                          message.sender === "user" ? "justify-end" : "justify-start"
-                        }`}
-                      >
-                        <div
-                          className={`max-w-[80%] rounded-xl px-4 py-2 ${
-                            message.sender === "user"
-                              ? "bg-blue-600 text-white"
-                              : "bg-white/10 text-white"
-                          }`}
-                        >
-                          <p className="text-sm">{message.text}</p>
-                          <p className="mt-1 text-right text-xs opacity-70">
-                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                    <div ref={messageEndRef} />
-                  </div>
-                  <div className="flex items-center space-x-2 pt-4">
-                    <Input
-                      value={currentMessage}
-                      onChange={(e) => setCurrentMessage(e.target.value)}
-                      placeholder="Ask AI to add, update or delete tasks..."
-                      className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/40"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          sendMessage();
-                        }
-                      }}
-                    />
-                    <Button 
-                      onClick={sendMessage}
-                      size="icon"
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </DrawerContent>
-            </Drawer>
-          </div>
-        </div>
-
-        <div className="mt-8 bg-white/5 backdrop-blur-md shadow-xl rounded-xl overflow-hidden border border-white/10">
-          <div className="p-6">
-            {isTimelineView ? renderTimelineView() : renderBoardView()}
-          </div>
-        </div>
-      </main>
-      
-      <Sheet open={isChatOpen} onOpenChange={setIsChatOpen}>
-        <SheetContent className="w-[400px] sm:max-w-md backdrop-blur-xl bg-black/70 text-white border-l border-white/10">
-          <SheetHeader className="border-b border-white/10 pb-4">
-            <SheetTitle className="flex items-center">
-              <Zap className="mr-2 h-5 w-5 text-blue-400" />
-              AI Project Assistant
-            </SheetTitle>
-          </SheetHeader>
-          <div className="h-[calc(100vh-180px)] flex flex-col">
-            <div className="flex-1 overflow-y-auto py-4 space-y-4">
-              {chatMessages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${
-                    message.sender === "user" ? "justify-end" : "justify-start"
-                  }`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-xl px-4 py-2 ${
-                      message.sender === "user"
-                        ? "bg-blue-600 text-white"
-                        : "bg-white/10 text-white"
-                    }`}
-                  >
-                    <p className="text-sm">{message.text}</p>
-                    <p className="mt-1 text-right text-xs opacity-70">
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              <div ref={messageEndRef} />
-            </div>
-            <div className="flex items-center space-x-2 pt-4 border-t border-white/10 mt-auto">
-              <Input
-                value={currentMessage}
-                onChange={(e) => setCurrentMessage(e.target.value)}
-                placeholder="Ask AI to add, update or delete tasks..."
-                className="flex-1 bg-white/10 border-white/20 text-white placeholder:text-white/40"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    sendMessage();
-                  }
-                }}
-              />
-              <Button 
-                onClick={sendMessage}
-                size="icon"
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </SheetContent>
-      </Sheet>
-    </div>
-  );
-};
-
-export default ProjectBoard;
