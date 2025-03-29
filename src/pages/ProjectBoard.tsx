@@ -817,3 +817,49 @@ const ProjectBoard: React.FC = () => {
                           {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
                         </Button>
                       </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0 bg-gray-800 border-gray-700">
+                        <CalendarComponent
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={(date: Date | undefined) => {
+                            if (date) {
+                              setSelectedDate(date);
+                            }
+                          }}
+                          initialFocus
+                          className="bg-gray-800 text-white"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="task-priority" className="text-white">Priority</Label>
+                    <select
+                      id="task-priority"
+                      value={newTaskPriority}
+                      onChange={(e) => setNewTaskPriority(e.target.value as "low" | "medium" | "high")}
+                      className="bg-white/10 border-white/20 text-white placeholder:text-white/40"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit" onClick={() => addNewTask()}>
+                    Create Task
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+        
+        {isTimelineView ? renderTimelineView() : renderBoardView()}
+      </main>
+    </div>
+  );
+};
+
+export default ProjectBoard;
