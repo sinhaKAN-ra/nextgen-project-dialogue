@@ -8,7 +8,7 @@ const Footer: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center">
               <span className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-                ProjectAI
+                nomore.report
               </span>
             </div>
             <p className="text-sm text-white/70">

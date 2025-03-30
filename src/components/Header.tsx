@@ -34,7 +34,7 @@ const Header: React.FC = () => {
               <Zap className="h-5 w-5 text-white" />
             </div>
             <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-              nomore
+              nomore.report
             </span>
           </Link>
         </div>

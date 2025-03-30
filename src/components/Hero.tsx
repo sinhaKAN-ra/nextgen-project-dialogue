@@ -127,7 +127,10 @@ const Hero: React.FC = () => {
                   transition={{ duration: 0.3 }}
                   className="absolute top-full mt-4 px-4 py-2 bg-white rounded-lg shadow-lg text-blue-600 text-lg font-semibold"
                 >
-                  Meet Pmai 👋
+                  Meet 
+                  <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                  Pmai
+                    </span> 👋
                 </motion.div>
               )}
             </AnimatePresence>
