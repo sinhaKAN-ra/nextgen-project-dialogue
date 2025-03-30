@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from "react";
 
 const workflowSteps = [
@@ -64,7 +63,7 @@ const Workflow: React.FC = () => {
   }, []);
 
   return (
-    <section id="workflow" className="py-24 bg-gradient-to-b from-white to-blue-50 relative">
+    <section id="workflow" className="py-24 bg-gradient-to-b from-slate-900 to-blue-900 relative">
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none"></div>
       
       <div className="container mx-auto px-4 md:px-6">
@@ -74,16 +73,15 @@ const Workflow: React.FC = () => {
               Workflow
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight reveal stagger-1">
+          <h2 className="text-3xl text-white/90 md:text-4xl font-bold tracking-tight reveal">
             How It Works
           </h2>
-          <p className="text-lg text-muted-foreground reveal stagger-2">
-            Our AI-powered platform simplifies project management through an intuitive workflow
+          <p className="text-lg text-white/70 reveal">
+            Our AI-powered platform simplifies project management through an intuitive workflow.
           </p>
         </div>
 
         <div className="relative">
-          {/* Central line */}
           <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-blue-100 hidden md:block"></div>
           
           <div className="space-y-16 relative">
@@ -98,19 +96,18 @@ const Workflow: React.FC = () => {
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
                       {step.id}
                     </div>
-                    <h3 className="text-xl font-semibold">{step.title}</h3>
+                    <h3 className="text-xl font-semibold text-white/70">{step.title}</h3>
                   </div>
                   <p className="text-muted-foreground">{step.description}</p>
                 </div>
                 
                 <div className="w-full md:w-1/2 flex justify-center">
                   <div className="relative p-2 bg-white rounded-xl shadow-lg hover-lift overflow-hidden max-w-sm w-full">
-                    {/* Mock UI for each step */}
-                    <div className="aspect-[4/3] w-full bg-gradient-to-br from-blue-50 to-white p-8 flex items-center justify-center">
+                    <div className="aspect-[4/3] w-full bg-gradient-to-br from-blue-500/90 to-blue-700 p-8 flex items-center justify-center">
                       <img 
                         src={step.imageUrl} 
                         alt={step.title} 
-                        className="w-20 h-20 opacity-80"
+                        className="w-20 h-20 opacity-80 bg-white/70 rounded"
                       />
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-white/80 to-transparent pointer-events-none"></div>

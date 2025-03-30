@@ -101,7 +101,7 @@ const Features: React.FC = () => {
   }, []);
 
   return (
-    <section id="features" className="py-24 bg-white relative">
+    <section id="features" className="py-24 bg-gradient-to-b from-slate-900 to-blue-900 relative">
       <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none"></div>
       
       <div className="container mx-auto px-4 md:px-6">
@@ -111,10 +111,10 @@ const Features: React.FC = () => {
               Features
             </span>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight reveal">
+          <h2 className="text-white/90 text-3xl md:text-4xl font-bold tracking-tight reveal">
             Intelligent Project Management
           </h2>
-          <p className="text-lg text-muted-foreground reveal">
+          <p className="text-lg text-white/70 reveal">
             Our AI-powered platform streamlines your workflow with smart features designed to reduce overhead and increase productivity.
           </p>
         </div>
@@ -123,13 +123,13 @@ const Features: React.FC = () => {
           {featuresData.map((feature) => (
             <div 
               key={feature.id} 
-              className="bg-white border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-300 reveal"
+              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-300 reveal"
             >
-              <div className="w-12 h-12 rounded-md bg-primary/10 flex items-center justify-center text-primary mb-4">
+              <div className="w-12 h-12 rounded-md bg-white/50 flex items-center justify-center text-primary mb-4">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
+              <h3 className="text-xl text-white font-semibold mb-2">{feature.title}</h3>
+              <p className="text-white/70 text-muted-foreground">{feature.description}</p>
             </div>
           ))}
         </div>

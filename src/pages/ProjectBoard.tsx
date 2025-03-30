@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { Calendar, Clock, Plus, Edit, Trash2, MessageCircle, Filter, Search, Send, ChevronRight, Zap, BarChart3, MoreVertical, Calendar as CalendarIcon, XCircle } from "lucide-react";
+import { Calendar, Clock, Plus, Edit, Trash2, MessageCircle, Filter, Search, Send, ChevronRight, Zap, BarChart3, MoreVertical, Calendar as CalendarIcon, XCircle, Check } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import Header from "@/components/Header";
 import { format } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 // Types
 interface Task {
@@ -175,7 +176,8 @@ const ProjectBoard: React.FC = () => {
     deadline: ""
   });
   const messageEndRef = useRef<HTMLDivElement>(null);
-  
+  const [taskFilter, setTaskFilter] = useState<"all" | "today" | "thisWeek" | "thisMonth" | "overdue" | "future">("all");
+
   // Auto-scroll chat to bottom when new messages arrive
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -191,7 +193,7 @@ const ProjectBoard: React.FC = () => {
 
     const sourceColumn = boardData.columns[source.droppableId];
     const destColumn = boardData.columns[destination.droppableId];
-    
+
     // If moving within the same column
     if (sourceColumn === destColumn) {
       const newTaskIds = Array.from(sourceColumn.taskIds);
@@ -214,7 +216,7 @@ const ProjectBoard: React.FC = () => {
       // Moving from one column to another
       const sourceTaskIds = Array.from(sourceColumn.taskIds);
       sourceTaskIds.splice(source.index, 1);
-      
+
       const destinationTaskIds = Array.from(destColumn.taskIds);
       destinationTaskIds.splice(destination.index, 0, draggableId);
 
@@ -237,7 +239,7 @@ const ProjectBoard: React.FC = () => {
 
   const addNewTask = (title = newTaskTitle, description = newTaskDescription, deadline = newTaskDeadline, priority = newTaskPriority) => {
     if (title.trim() === "") return;
-    
+
     // Create new task
     const newTaskId = `task-${Date.now()}`;
     const newTask: Task = {
@@ -252,11 +254,11 @@ const ProjectBoard: React.FC = () => {
       comments: 0,
       progress: 0,
     };
-    
+
     // Add to first column
     const firstColumnId = boardData.columnOrder[0];
     const firstColumn = boardData.columns[firstColumnId];
-    
+
     setBoardData({
       ...boardData,
       tasks: {
@@ -271,7 +273,7 @@ const ProjectBoard: React.FC = () => {
         },
       },
     });
-    
+
     // Reset form
     setNewTaskTitle("");
     setNewTaskDescription("");
@@ -293,7 +295,7 @@ const ProjectBoard: React.FC = () => {
       text: `Great! I've added "${title}" to your To Do list. Need help getting started with this task?`,
       timestamp: new Date(),
     };
-    
+
     setChatMessages(prev => [...prev, aiResponse]);
     simulateAiSpeaking();
   };
@@ -337,7 +339,7 @@ const ProjectBoard: React.FC = () => {
       text: `I've deleted the task as requested. Is there anything else you need?`,
       timestamp: new Date(),
     };
-    
+
     setChatMessages(prev => [...prev, aiResponse]);
     simulateAiSpeaking();
   };
@@ -359,7 +361,7 @@ const ProjectBoard: React.FC = () => {
     setIsAiSpeaking(true);
     setTimeout(() => {
       setIsAiSpeaking(false);
-    }, 2000);
+    }, 5000);
   };
 
   const handleAiTaskSubmit = () => {
@@ -376,21 +378,21 @@ const ProjectBoard: React.FC = () => {
       text: currentMessage,
       timestamp: new Date(),
     };
-    
+
     setChatMessages(prev => [...prev, userMessage]);
     setCurrentMessage("");
 
     // Process user message and generate AI response
     setTimeout(() => {
       let aiResponse: ChatMessage;
-      
+
       // Check if message contains certain keywords
       const lowerMessage = currentMessage.toLowerCase();
-      
+
       if (lowerMessage.includes("add task") || lowerMessage.includes("create task")) {
         // Show task creation form
         setShowAiTaskForm(true);
-        
+
         aiResponse = {
           id: `msg-${Date.now()}`,
           sender: "ai",
@@ -401,17 +403,17 @@ const ProjectBoard: React.FC = () => {
         // Find task by title (simplified approach)
         const taskTitle = Object.values(boardData.tasks)
           .find(task => lowerMessage.toLowerCase().includes(task.title.toLowerCase()))?.title;
-          
+
         if (taskTitle) {
           const taskId = Object.entries(boardData.tasks)
             .find(([_, task]) => task.title === taskTitle)?.[0];
-            
+
           if (taskId) {
             deleteTask(taskId);
             return;
           }
         }
-        
+
         aiResponse = {
           id: `msg-${Date.now()}`,
           sender: "ai",
@@ -426,7 +428,7 @@ const ProjectBoard: React.FC = () => {
           timestamp: new Date(),
         };
       }
-      
+
       setChatMessages(prev => [...prev, aiResponse]);
       simulateAiSpeaking();
     }, 1000);
@@ -445,296 +447,600 @@ const ProjectBoard: React.FC = () => {
     const today = new Date();
     const taskDate = new Date(deadline);
     const timelineDuration = 30; // 30 days timeline
-    
+
+    // Calculate if the task is overdue, due soon, or in the future
+    if (taskDate < today) {
+      return {
+        status: "overdue",
+        daysFromNow: Math.ceil(Math.abs(today.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24)),
+        color: "bg-red-500",
+        left: "0%"
+      };
+    }
+
     const diffTime = Math.abs(taskDate.getTime() - today.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (taskDate < today) {
-      return { left: "0%", color: "bg-red-500" };
-    } else if (diffDays > timelineDuration) {
-      return { left: "95%", color: "bg-green-500" };
+
+    if (diffDays > timelineDuration) {
+      return {
+        status: "future",
+        daysFromNow: diffDays,
+        color: "bg-indigo-500",
+        left: "95%"
+      };
+    } else if (diffDays < 7) {
+      return {
+        status: "soon",
+        daysFromNow: diffDays,
+        color: "bg-amber-500",
+        left: `${(diffDays / timelineDuration) * 100}%`
+      };
     } else {
-      const percentage = (diffDays / timelineDuration) * 100;
-      return { left: `${percentage}%`, color: diffDays < 7 ? "bg-amber-500" : "bg-green-500" };
+      return {
+        status: "upcoming",
+        daysFromNow: diffDays,
+        color: "bg-green-500",
+        left: `${(diffDays / timelineDuration) * 100}%`
+      };
     }
   };
 
-  const filteredTasks = searchTerm.trim() === "" 
-    ? boardData.tasks 
+  const filteredTasks = searchTerm.trim() === ""
+    ? boardData.tasks
     : Object.fromEntries(
-        Object.entries(boardData.tasks).filter(([_, task]) => 
-          task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          task.description.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-      );
+      Object.entries(boardData.tasks).filter(([_, task]) =>
+        task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        task.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    );
+
+    const getDraggableStyle = (isDragging: boolean, draggableStyle: any) => ({
+      // Basic styles for the dragging item
+      userSelect: "none",
+      // Keep the background visible during dragging
+      background: isDragging ? "white" : "transparent",
+      // Apply the provided styles without overriding transform
+      ...draggableStyle,
+      // Enhanced styling for dragging state that doesn't interfere with position
+      boxShadow: isDragging 
+        ? "0 12px 24px rgba(0, 0, 0, 0.15), 0 6px 12px rgba(59, 130, 246, 0.2)" 
+        : "none",
+      // Don't modify the transform property as it's crucial for positioning
+      // Instead, add a subtle rotation via the motion component
+      borderRadius: isDragging ? "8px" : "6px",
+      zIndex: isDragging ? 9999 : 1,
+      opacity: isDragging ? 0.85 : 1
+    });
 
   const renderTimelineView = () => {
     const today = new Date();
-    const thirtyDaysFromNow = new Date(today);
-    thirtyDaysFromNow.setDate(today.getDate() + 30);
     
-    const timelineMarkers = [];
-    for (let i = 0; i <= 4; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i * 7);
-      const left = `${(i * 7 / 30) * 100}%`;
-      
-      timelineMarkers.push(
-        <div key={`marker-${i}`} className="absolute -top-6" style={{ left }}>
-          <div className="text-xs text-muted-foreground whitespace-nowrap">
-            {i === 0 ? 'Today' : `+${i * 7} days`}
-          </div>
-          <div className="h-6 w-px bg-border absolute top-5 left-0"></div>
-        </div>
-      );
+    // Mock data for demonstration
+    const mockTasks = [
+      {
+        id: "task-6",
+        title: "Prepare project presentation",
+        description: "Create slides for the project presentation.",
+        deadline: format(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2), "yyyy-MM-dd"),
+        priority: "high",
+        assignee: { name: "Alex Chen" },
+        comments: 0,
+        progress: 0,
+      },
+      {
+        id: "task-7",
+        title: "Conduct user testing",
+        description: "Gather feedback from users on the prototype.",
+        deadline: format(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5), "yyyy-MM-dd"),
+        priority: "medium",
+        assignee: { name: "Maya Lin" },
+        comments: 0,
+        progress: 0,
+      },
+      {
+        id: "task-8",
+        title: "Finalize project report",
+        description: "Compile all findings and finalize the report.",
+        deadline: format(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 10), "yyyy-MM-dd"),
+        priority: "low",
+        assignee: { name: "Jordan Taylor" },
+        comments: 0,
+        progress: 0,
+      },
+    ];
+
+    // Combine existing tasks with mock tasks for demonstration
+    const allTasks = { ...filteredTasks, ...mockTasks.reduce((acc, task) => ({ ...acc, [task.id]: task }), {}) };
+
+    // Group tasks by their deadline status
+    const groupedTasks = {
+      overdue: [] as Task[],
+      today: [] as Task[],
+      thisWeek: [] as Task[],
+      thisMonth: [] as Task[],
+      future: [] as Task[],
+    };
+
+    Object.values(allTasks).forEach((task: Task) => {
+      const position = getTimelinePosition(task.deadline);
+      if (position.status === "overdue") {
+        groupedTasks.overdue.push(task);
+      } else if (position.daysFromNow === 0) {
+        groupedTasks.today.push(task);
+      } else if (position.daysFromNow < 7) {
+        groupedTasks.thisWeek.push(task);
+      } else if (position.daysFromNow <= 30) {
+        groupedTasks.thisMonth.push(task);
+      } else {
+        groupedTasks.future.push(task);
+      }
+    });
+
+    // Sort each group by priority (high > medium > low)
+    const priorityOrder = { high: 0, medium: 1, low: 2 };
+    const sortByPriority = (a: Task, b: Task) => {
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    };
+
+    Object.keys(groupedTasks).forEach(key => {
+      groupedTasks[key as keyof typeof groupedTasks].sort(sortByPriority);
+    });
+
+    // Determine which tasks to display based on the selected filter
+    let tasksToDisplay = [];
+    switch (taskFilter) {
+      case "today":
+        tasksToDisplay = groupedTasks.today;
+        break;
+      case "thisWeek":
+        tasksToDisplay = groupedTasks.thisWeek;
+        break;
+      case "thisMonth":
+        tasksToDisplay = groupedTasks.thisMonth;
+        break;
+      case "future":
+        tasksToDisplay = groupedTasks.future;
+        break;
+      case "overdue":
+        tasksToDisplay = groupedTasks.overdue;
+        break;
+      default:
+        tasksToDisplay = [
+          ...groupedTasks.overdue,
+          ...groupedTasks.today,
+          ...groupedTasks.thisWeek,
+          ...groupedTasks.thisMonth,
+          ...groupedTasks.future,
+        ];
+        break;
     }
-    
+
+    // Calculate pin position based on the selected filter
+    const pinPosition = (() => {
+      switch (taskFilter) {
+        case "today":
+          return "10%"; // Center for today
+        case "thisWeek":
+          return "25%"; // Example position for this week
+        case "thisMonth":
+          return "75%"; // Example position for this month
+        case "future":
+          return "95%"; // Example position for future
+        case "overdue":
+          return "0%"; // Start for overdue
+        case "all":
+            return "100%";
+        default:
+          return "50%"; // Default to center
+      }
+    })();
+
     return (
-      <div className="my-8 space-y-8">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Timeline View</h2>
+      <div className="space-y-6 p-4 h-[calc(100vh-200px)] overflow-y-auto">
+        <div className="flex justify-between items-center pb-4">
+          <h2 className="text-xl text-white/90 font-semibold flex items-center gap-2">
+            <CalendarIcon className="h-5 w-5" /> Timeline Journey
+          </h2>
           <Button variant="outline" size="sm" onClick={() => setIsTimelineView(false)}>
             Switch to Board View
           </Button>
         </div>
-        
-        <div className="relative pt-8 pb-16">
-          {/* Timeline base */}
-          <div className="h-1 w-full bg-secondary rounded-full relative">
-            {timelineMarkers}
-          </div>
-          
-          {/* Task markers */}
-          {Object.values(filteredTasks).map(task => {
-            const { left, color } = getTimelinePosition(task.deadline);
-            return (
-              <div 
-                key={task.id} 
-                className="absolute transform -translate-y-1/2"
-                style={{ left, top: "30px" }}
-              >
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button 
-                      className={`w-5 h-5 rounded-full ${color} border-2 border-background shadow-md hover:scale-125 transition-transform z-10`}
-                    />
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80">
-                    <Card>
-                      <CardHeader className="p-3 pb-0">
-                        <div className="flex justify-between items-start">
-                          <Badge className={cn("font-normal", getPriorityColor(task.priority))}>
-                            {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
-                          </Badge>
-                          <div className="flex gap-1">
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0" 
-                              onClick={() => updateTaskProgress(task.id, Math.min(100, task.progress + 10))}>
-                              <Edit className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" 
-                              onClick={() => deleteTask(task.id)}>
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="p-3">
-                        <h4 className="font-medium mb-1">{task.title}</h4>
-                        <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs">
-                            <span>Progress</span>
-                            <span>{task.progress}%</span>
-                          </div>
-                          <Progress value={task.progress} />
-                        </div>
-                      </CardContent>
-                      <CardFooter className="p-3 pt-0 flex justify-between items-center">
-                        <div className="flex items-center gap-1.5">
-                          <Avatar className="h-5 w-5">
-                            <AvatarFallback className="text-[10px]">
-                              {task.assignee.name
-                                .split(' ')
-                                .map(n => n[0])
-                                .join('')}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="text-xs">{task.assignee.name}</span>
-                        </div>
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <Calendar className="h-3 w-3 mr-1" />
-                          <span>{new Date(task.deadline).toLocaleDateString()}</span>
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  </PopoverContent>
-                </Popover>
-                <div className="absolute w-36 mt-3 -ml-16 text-center">
-                  <span className="text-xs font-medium truncate block">{task.title}</span>
-                  <span className="text-[10px] text-muted-foreground">
-                    {new Date(task.deadline).toLocaleDateString()}
-                  </span>
-                </div>
+
+        {/* Filter Buttons */}
+        <div className="flex space-x-4 mb-4">
+          <Button variant={taskFilter === "today" ? "default" : "outline"} onClick={() => setTaskFilter("today")}>
+            Today
+          </Button>
+          <Button variant={taskFilter === "thisWeek" ? "default" : "outline"} onClick={() => setTaskFilter("thisWeek")}>
+            This Week
+          </Button>
+          <Button variant={taskFilter === "thisMonth" ? "default" : "outline"} onClick={() => setTaskFilter("thisMonth")}>
+            This Month
+          </Button>
+          <Button variant={taskFilter === "future" ? "default" : "outline"} onClick={() => setTaskFilter("future")}>
+            Future
+          </Button>
+          <Button variant={taskFilter === "all" ? "default" : "outline"} onClick={() => setTaskFilter("all")}>
+            All
+          </Button>
+          <Button variant={taskFilter === "overdue" ? "default" : "outline"} onClick={() => setTaskFilter("overdue")}>
+            Overdue
+          </Button>
+        </div>
+
+        {/* Timeline path - curved SVG path */}
+        <svg className="w-full h-20" viewBox="0 0 1000 80" preserveAspectRatio="none">
+          <path
+            d="M0,40 C200,80 300,0 500,40 C700,80 800,0 1000,40"
+            stroke="#fff"
+            strokeWidth="2"
+            fill="none"
+            strokeDasharray="5,5"
+          />
+          {/* Pin Point */}
+          <circle cx={parseInt(pinPosition) * 10} cy={40} r="5" fill="red" />
+        </svg>
+
+        {/* Current Date Indicator */}
+        <div className="w-full flex justify-between items-center p-4 rounded-lg shadow-md">
+          <span className="text-white text-lg font-semibold">{format(today, "PPP")}</span>
+          <span className="text-white text-lg font-semibold">Current Position</span>
+        </div>
+
+        {/* Phases of the selected task */}
+        <div className="mt-4">
+          <div className="flex space-x-4">
+            {tasksToDisplay.map(task => (
+              <div key={task.id} className="flex flex-col items-center">
+                <div className="text-white">{task.title}</div>
+                <div className="text-xs text-gray-400">{format(new Date(task.deadline), "PPP")}</div>
+                <div className="h-2 w-2 rounded-full bg-blue-500" />
               </div>
-            );
-          })}
+            ))}
+          </div>
+          <h3 className="text-lg text-white">Task Phases</h3>
+
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Object.values(filteredTasks).map(task => (
-            <Card key={task.id} className="hover:shadow-md transition-shadow overflow-hidden border-l-4" 
-              style={{ borderLeftColor: task.priority === 'high' ? 'rgb(239, 68, 68)' : task.priority === 'medium' ? 'rgb(245, 158, 11)' : 'rgb(34, 197, 94)' }}>
-              <CardHeader className="p-4 pb-0">
-                <div className="flex justify-between">
-                  <h3 className="font-medium">{task.title}</h3>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0" 
-                      onClick={() => updateTaskProgress(task.id, Math.min(100, task.progress + 10))}>
-                      <Edit className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" 
-                      onClick={() => deleteTask(task.id)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span>Progress</span>
-                    <span>{task.progress}%</span>
-                  </div>
-                  <Progress value={task.progress} className="h-2" />
-                </div>
-              </CardContent>
-              <CardFooter className="p-4 pt-0 flex justify-between">
-                <div className="flex items-center gap-1.5">
-                  <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">
-                      {task.assignee.name
-                        .split(' ')
-                        .map(n => n[0])
-                        .join('')}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-xs">{task.assignee.name}</span>
-                </div>
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  <span>{new Date(task.deadline).toLocaleDateString()}</span>
-                </div>
-              </CardFooter>
-            </Card>
-          ))}
+
+        {/* Task groups */}
+        <div className="space-y-8 mt-12">
+          {tasksToDisplay.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {tasksToDisplay.map((task, index) => renderTaskCard(task, "bg-blue-500/10 border-blue-500/20", index))}
+            </div>
+          ) : (
+            <div className="text-center py-10 text-muted-foreground">
+              <p>No tasks found for the selected filter.</p>
+            </div>
+          )}
         </div>
+
+
       </div>
     );
   };
 
-  const renderBoardView = () => (
-    <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {boardData.columnOrder.map((columnId) => {
-          const column = boardData.columns[columnId];
-          const tasks = column.taskIds
-            .filter(taskId => filteredTasks[taskId])
-            .map(taskId => filteredTasks[taskId]);
 
-          return (
-            <div key={column.id} className="flex flex-col rounded-lg border bg-card/50 backdrop-blur-sm">
-              <div className="flex items-center justify-between border-b p-4">
-                <h3 className="font-medium">{column.title}</h3>
-                <Badge variant="outline">{tasks.length}</Badge>
-              </div>
-              
-              <Droppable droppableId={column.id}>
-                {(provided) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.droppableProps}
-                    className="flex-1 overflow-y-auto p-3"
-                    style={{ minHeight: "calc(100vh - 320px)" }}
-                  >
-                    {tasks.length === 0 ? (
-                      <div className="flex h-24 items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
-                        No tasks
-                      </div>
-                    ) : (
-                      tasks.map((task, index) => (
-                        <Draggable key={task.id} draggableId={task.id} index={index}>
-                          {(provided) => (
-                            <Card
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className="mb-3 transition-all hover:shadow-md overflow-hidden border-l-4"
-                              style={{ 
-                                ...provided.draggableProps.style,
-                                borderLeftColor: task.priority === 'high' ? 'rgb(239, 68, 68)' : task.priority === 'medium' ? 'rgb(245, 158, 11)' : 'rgb(34, 197, 94)' 
-                              }}
-                            >
-                              <CardHeader className="p-3 pb-0">
-                                <div className="flex justify-between">
-                                  <Badge className={cn("font-normal", getPriorityColor(task.priority))}>
-                                    {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
-                                  </Badge>
-                                  <div className="flex gap-1">
-                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0" 
-                                      onClick={() => updateTaskProgress(task.id, Math.min(100, task.progress + 10))}>
-                                      <Edit className="h-3 w-3" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive" 
-                                      onClick={() => deleteTask(task.id)}>
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
-                                  </div>
-                                </div>
-                              </CardHeader>
-                              <CardContent className="p-3 pt-1">
-                                <h4 className="font-medium">{task.title}</h4>
-                                <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
-                                <div className="space-y-1">
-                                  <div className="flex justify-between text-xs">
-                                    <span>Progress</span>
-                                    <span>{task.progress}%</span>
-                                  </div>
-                                  <Progress value={task.progress} className="h-1.5" />
-                                </div>
-                              </CardContent>
-                              <CardFooter className="p-3 pt-1 flex justify-between">
-                                <div className="flex items-center gap-1.5">
-                                  <Avatar className="h-5 w-5">
-                                    <AvatarFallback className="text-xs">
-                                      {task.assignee.name
-                                        .split(' ')
-                                        .map(n => n[0])
-                                        .join('')}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span className="text-xs">{task.assignee.name}</span>
-                                </div>
-                                <div className="flex items-center text-xs text-muted-foreground">
-                                  <Calendar className="h-3 w-3 mr-1" />
-                                  <span>{new Date(task.deadline).toLocaleDateString()}</span>
-                                </div>
-                              </CardFooter>
-                            </Card>
-                          )}
-                        </Draggable>
-                      ))
-                    )}
-                    {provided.placeholder}
+ // Add this to your imports if not already present
+// import { createPortal } from 'react-dom';
+
+const renderTaskCard = (task: Task, cardStyle: string, index: number) => {
+  return (
+    <Draggable key={task.id} draggableId={task.id} index={index}>
+      {(provided, snapshot) => {
+        // The actual card content that will be used both for the original position and the drag preview
+        const cardContent = (
+          <motion.div
+            whileHover={{ 
+              scale: snapshot.isDragging ? 1 : 1.03, 
+              y: snapshot.isDragging ? 0 : -3,
+              transition: { type: "spring", stiffness: 400 }
+            }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20, transition: { duration: 0.2 } }}
+            className={`${cardStyle} relative`}
+          >
+            <Card 
+              className="mb-3 transition-all hover:shadow-lg overflow-hidden border-l-4 backdrop-blur-sm"
+              style={{ 
+                borderLeftColor: task.priority === 'high' ? 'rgb(239, 68, 68)' : task.priority === 'medium' ? 'rgb(245, 158, 11)' : 'rgb(34, 197, 94)'
+              }}
+            >
+              {/* Card content remains the same */}
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10" 
+                initial={{ width: 0 }}
+                animate={{ width: `${task.progress}%` }}
+                transition={{ type: "spring", damping: 15 }}
+                style={{ 
+                  height: '3px', 
+                  top: 0, 
+                  opacity: 0.8,
+                  background: task.progress === 100 
+                    ? 'linear-gradient(to right, rgba(16, 185, 129, 0.7), rgba(5, 150, 105, 0.9))' 
+                    : 'linear-gradient(to right, rgba(59, 130, 246, 0.6), rgba(99, 102, 241, 0.8))'
+                }}
+              />
+
+              <CardHeader className="p-3 pb-0">
+                {/* Header content remains the same */}
+                <div className="flex justify-between">
+                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Badge className={cn("font-normal", getPriorityColor(task.priority))}>
+                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                    </Badge>
+                  </motion.div>
+                  <div className="flex gap-1">
+                    <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 relative overflow-hidden group"
+                        onClick={() => updateTaskProgress(task.id, Math.min(100, task.progress + 10))}>
+                        <span className="absolute inset-0 bg-blue-500/10 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                        <Edit className="h-3.5 w-3.5 relative z-10" />
+                      </Button>
+                    </motion.div>
+                    <motion.div whileHover={{ scale: 1.15 }} whileTap={{ scale: 0.9 }}>
+                      <Button variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive relative overflow-hidden group"
+                        onClick={() => deleteTask(task.id)}>
+                        <span className="absolute inset-0 bg-red-500/10 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                        <Trash2 className="h-3.5 w-3.5 relative z-10" />
+                      </Button>
+                    </motion.div>
                   </div>
-                )}
-              </Droppable>
-            </div>
-          );
-        })}
-      </div>
-    </DragDropContext>
+                </div>
+              </CardHeader>
+              <CardContent className="p-3">
+                {/* Content remains the same */}
+                <motion.h4 
+                  className="font-medium mb-1 line-clamp-1"
+                  initial={{ y: 0 }}
+                  whileHover={{ y: -1 }}
+                >
+                  {task.title}
+                </motion.h4>
+                <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{task.description}</p>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs">
+                    <span>Progress</span>
+                    <motion.span
+                      key={task.progress}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {task.progress}%
+                    </motion.span>
+                  </div>
+                  <Progress 
+                    value={task.progress} 
+                    className={task.progress === 100 ? "bg-emerald-500" : ""} 
+                  />
+                  {task.progress === 100 && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                      className="absolute top-3 right-3"
+                    >
+                      <div className="h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                        <Check className="h-3 w-3 text-white" />
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              </CardContent>
+              <CardFooter className="p-3 pt-0 flex justify-between items-center mt-auto">
+                {/* Footer content remains the same */}
+                <div className="flex items-center gap-1.5">
+                  <Avatar className="h-5 w-5 relative">
+                    <motion.div
+                      className="relative"
+                      animate={{ 
+                        scale: isAiSpeaking ? [1, 1.1, 1] : 1,
+                        rotate: isAiSpeaking ? [0, 2, 0, -2, 0] : 0
+                      }}
+                      transition={{ 
+                        duration: 1.5, 
+                        repeat: isAiSpeaking ? Infinity : null,
+                        repeatType: "loop"
+                      }}
+                    >
+                      <AvatarFallback className="text-[10px] bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                        {task.assignee.name
+                          .split(' ')
+                          .map(n => n[0])
+                          .join('')}
+                      </AvatarFallback>
+                    </motion.div>
+                  </Avatar>
+                  <span className="text-xs">{task.assignee.name}</span>
+                </div>
+                <motion.div 
+                  className="flex items-center text-xs text-muted-foreground"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  <Calendar className="h-3 w-3 mr-1" />
+                  <span>{new Date(task.deadline).toLocaleDateString()}</span>
+                </motion.div>
+              </CardFooter>
+            </Card>
+          </motion.div>
+        );
+
+        // For the drag preview, use portal to render it outside of the current column
+        // This is what makes it visible across columns
+        return (
+          <div
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            style={{
+              ...provided.draggableProps.style,
+              opacity: snapshot.isDragging ? 0.5 : 1, // Original becomes semi-transparent
+            }}
+          >
+            {cardContent}
+            {snapshot.isDragging && 
+              createPortal(
+                <div
+                  style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 9999,
+                    ...provided.draggableProps.style,
+                  }}
+                >
+                  {cardContent}
+                </div>,
+                document.body
+              )
+            }
+          </div>
+        );
+      }}
+    </Draggable>
   );
+};
+
+// Make sure to add the DragDropContext component with proper styles
+const renderBoardView = () => (
+  <DragDropContext 
+    onDragEnd={handleDragEnd}
+    onDragStart={() => {
+      // You can add global styles or state changes when drag starts
+      document.body.style.cursor = 'grabbing';
+    }}
+    onDragUpdate={(update) => {
+      // Optional: handle drag updates
+    }}
+  >
+    <motion.div 
+      className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ staggerChildren: 0.1 }}
+    >
+      {boardData.columnOrder.map((columnId, colIndex) => {
+        const column = boardData.columns[columnId];
+        const tasks = column.taskIds
+          .filter(taskId => filteredTasks[taskId])
+          .map(taskId => filteredTasks[taskId]);
+
+        return (
+          <motion.div 
+            key={column.id} 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              delay: colIndex * 0.1,
+              duration: 0.5, 
+              type: "spring"
+            }}
+            className="flex flex-col rounded-lg border bg-card/50 backdrop-blur-sm relative overflow-hidden"
+          >
+            {/* Subtle background gradient animation */}
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5"
+              animate={{ 
+                background: [
+                  "linear-gradient(to bottom right, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05))",
+                  "linear-gradient(to bottom right, rgba(139, 92, 246, 0.05), rgba(59, 130, 246, 0.05))",
+                  "linear-gradient(to bottom right, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05))"
+                ]
+              }}
+              transition={{ 
+                duration: 8, 
+                repeat: Infinity,
+                repeatType: "reverse" 
+              }}
+            />
+
+            <div className="flex items-center justify-between border-b p-4 relative z-10">
+              <h3 className="font-medium">{column.title}</h3>
+              <motion.div 
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
+                <Badge variant="outline" className="bg-background/80 backdrop-blur-sm">
+                  {tasks.length}
+                </Badge>
+              </motion.div>
+            </div>
+
+            <Droppable droppableId={column.id}>
+              {(provided, snapshot) => (
+                <motion.div
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="flex-1 overflow-y-auto p-3 transition-all duration-300"
+                  style={{ 
+                    minHeight: "calc(100vh - 320px)",
+                    background: snapshot.isDraggingOver 
+                      ? "rgba(59, 130, 246, 0.05)" 
+                      : "transparent"
+                  }}
+                  animate={{ 
+                    boxShadow: snapshot.isDraggingOver 
+                      ? "inset 0 0 15px rgba(59, 130, 246, 0.1)" 
+                      : "inset 0 0 0 rgba(0, 0, 0, 0)",
+                    scale: snapshot.isDraggingOver ? 1.02 : 1,
+                  }}
+                  transition={{
+                    scale: { type: "spring", stiffness: 300, damping: 30 }
+                  }}
+                >
+                  {tasks.length === 0 ? (
+                    <motion.div 
+                      className="flex h-24 items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground"
+                      animate={{ 
+                        opacity: snapshot.isDraggingOver ? 0.9 : [0.7, 0.9, 0.7], 
+                        scale: snapshot.isDraggingOver ? 1.05 : 1,
+                        borderColor: snapshot.isDraggingOver 
+                          ? "rgba(59, 130, 246, 0.4)" 
+                          : [
+                              "rgba(99, 102, 241, 0.2)",
+                              "rgba(139, 92, 246, 0.2)",
+                              "rgba(99, 102, 241, 0.2)"
+                            ]
+                      }}
+                      transition={{ 
+                        duration: snapshot.isDraggingOver ? 0.2 : 3,
+                        repeat: snapshot.isDraggingOver ? 0 : Infinity,
+                        repeatType: "reverse"
+                      }}
+                    >
+                      {snapshot.isDraggingOver ? 
+                        "Drop here" : 
+                        "No tasks"}
+                    </motion.div>
+                  ) : (
+                    tasks.map((task, index) => (
+                      <motion.div
+                        key={task.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                      >
+                        {renderTaskCard(task, "bg-blue/10 border-blue-500/20", index)}
+                      </motion.div>
+                    ))
+                  )}
+                  {provided.placeholder}
+                </motion.div>
+              )}
+            </Droppable>
+          </motion.div>
+        );
+      })}
+    </motion.div>
+  </DragDropContext>
+);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-blue-900">
@@ -745,7 +1051,7 @@ const ProjectBoard: React.FC = () => {
             <h1 className="text-3xl font-bold text-white">Project Vision Board</h1>
             <p className="text-white/70">Visualize your project's journey with AI assistance</p>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-4">
             <div className="relative max-w-sm flex-1 md:min-w-[260px]">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -757,7 +1063,7 @@ const ProjectBoard: React.FC = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            
+
             <Dialog>
               <DialogTrigger asChild>
                 <Button className="bg-white/20 hover:bg-white/30 text-white border-white/10">
@@ -841,9 +1147,9 @@ const ProjectBoard: React.FC = () => {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-            <Button 
+            <Button
               onClick={() => setIsTimelineView(!isTimelineView)}
-              variant="outline" 
+              variant="outline"
               className="bg-white/10 hover:bg-white/20 text-white border-white/20"
             >
               {isTimelineView ? (
@@ -860,8 +1166,8 @@ const ProjectBoard: React.FC = () => {
             </Button>
             <Drawer>
               <DrawerTrigger asChild>
-                <Button 
-                  size="icon" 
+                <Button
+                  size="icon"
                   className="bg-white/20 hover:bg-white/30 text-white border-white/20"
                   onClick={() => setIsChatOpen(true)}
                 >
@@ -872,12 +1178,16 @@ const ProjectBoard: React.FC = () => {
                 <DrawerHeader className="border-b border-white/10 pb-4">
                   <DrawerTitle className="flex items-center gap-3">
                     <div className="relative">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
+                      <motion.div
+                        className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center"
+                        animate={{ scale: isAiSpeaking ? 1.1 : 1 }} // Pulsing effect
+                        transition={{ duration: 0.3, repeat: isAiSpeaking ? Infinity : 0, ease: "easeInOut" }}
+                      >
                         <Zap className="h-6 w-6 text-white" />
-                      </div>
+                      </motion.div>
                       {isAiSpeaking && (
-                        <motion.div 
-                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full"
+                        <motion.div
+                          className="absolute -bottom-1 -right-1 w-3 h-3 bg-purple-900 rounded-full"
                           animate={{
                             scale: [1, 1.2, 1],
                             opacity: [1, 0.7, 1]
@@ -892,16 +1202,16 @@ const ProjectBoard: React.FC = () => {
                     </div>
                     <div>
                       <h3 className="font-bold text-lg">PMAI Assistant</h3>
-                      <p className="text-xs text-slate-400">Project Management AI</p>
+                      <p className="text-xs text-slate-100">Project Management AI</p>
                     </div>
-                    {isAiSpeaking && (
-                      <motion.div 
+                    {!isAiSpeaking && (
+                      <motion.div
                         className="flex items-center gap-1 ml-2 bg-white/10 px-2 py-1 rounded-full"
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                       >
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                        <span className="text-xs text-green-500">Active</span>
+                        <span className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
+                        <span className="text-xs text-white-500">Active</span>
                       </motion.div>
                     )}
                   </DrawerTitle>
@@ -922,15 +1232,14 @@ const ProjectBoard: React.FC = () => {
                               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
                                 <Zap className="h-4 w-4 text-white" />
                               </div>
-                              <span className="text-[10px] text-slate-400">PMAI</span>
+                              <span className="text-[10px] text-slate-200">PMAI</span>
                             </div>
                           )}
                           <motion.div
-                            className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
-                              message.sender === "user"
+                            className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${message.sender === "user"
                                 ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-br-none"
                                 : "bg-gradient-to-r from-white/20 to-white/10 text-slate-100 rounded-bl-none"
-                            }`}
+                              }`}
                             initial={{ scale: 0.95 }}
                             animate={{ scale: 1 }}
                           >
@@ -951,7 +1260,7 @@ const ProjectBoard: React.FC = () => {
                   </div>
 
                   {showAiTaskForm && (
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 20 }}
@@ -1027,13 +1336,13 @@ const ProjectBoard: React.FC = () => {
                           </select>
                         </div>
                         <div className="flex gap-2 pt-2">
-                          <Button 
+                          <Button
                             onClick={() => setShowAiTaskForm(false)}
                             className="flex-1 bg-white/20 hover:bg-white/30 text-white"
                           >
                             Cancel
                           </Button>
-                          <Button 
+                          <Button
                             onClick={() => {
                               addNewTask(aiTaskData.title, aiTaskData.description, aiTaskData.deadline, aiTaskData.priority);
                               setShowAiTaskForm(false);
@@ -1060,7 +1369,7 @@ const ProjectBoard: React.FC = () => {
                         }
                       }}
                     />
-                    <Button 
+                    <Button
                       onClick={sendMessage}
                       size="icon"
                       className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-full"

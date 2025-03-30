@@ -8,14 +8,14 @@ const GetStarted = () => {
   return (
     <section
       id="get-started"
-      className="relative py-24 overflow-hidden bg-gradient-to-b from-background to-muted/30"
+      className="relative py-24 overflow-hidden bg-gradient-to-b from-slate-900 to-blue-900"
     >
       <div className="container max-w-5xl mx-auto px-4 md:px-6">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 reveal">
+          <h2 className="text-3xl text-white/90 md:text-4xl font-bold mb-4 reveal">
             Ready to Transform Your Project Management?
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto reveal">
+          <p className="text-lg text-white/70 max-w-2xl mx-auto reveal">
             Join thousands of teams who are already using our AI-powered platform
             to accelerate their workflows.
           </p>
@@ -61,7 +61,7 @@ const GetStarted = () => {
               Try Demo Board <ArrowRight className="ml-2" />
             </Button>
           </Link>
-          <p className="mt-4 text-sm text-muted-foreground">
+          <p className="mt-4 text-sm text-white/70">
             No credit card required. Start your 14-day free trial.
           </p>
         </div>

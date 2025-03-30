@@ -1,8 +1,13 @@
-import React, { useEffect, useRef } from "react";
+import { MessageCircle, Mic, Zap } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 
 const Hero: React.FC = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
-  
+  const navigation = useNavigate();
+  const [showName, setShowName] = useState(false);
+
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -28,71 +33,105 @@ const Hero: React.FC = () => {
       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-blue-500 to-purple-600 opacity-50 z-0"></div>
       
       {/* Animated background elements */}
-      <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float"></div>
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: "1s" }}></div>
+      <motion.div 
+        className="absolute -top-24 -right-24 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30"
+        animate={{ y: [0, 10, 0] }} 
+        transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+      />
+      <motion.div 
+        className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20"
+        animate={{ y: [0, -10, 0] }} 
+        transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+        style={{ animationDelay: "1s" }}
+      />
       
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
-            <div className="space-y-4">
-              <div className="inline-block reveal">
+            <motion.div 
+              className="space-y-4 reveal"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="inline-block">
                 <span className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                   Coming Soon
                 </span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter reveal">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter">
                 AI-Powered
                 <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
                   Project Management
                 </span>
               </h1>
-              <p className="text-lg text-white/70 max-w-[600px] reveal stagger-1">
+              <p className="text-lg text-white/70 max-w-[600px]">
                 Revolutionize your workflow with our intelligent project assistant that understands requirements, creates tasks, and communicates with your team.
               </p>
-            </div>
+            </motion.div>
             
-            <div className="flex flex-col sm:flex-row gap-4 reveal stagger-2">
-              <button className="px-8 py-3 text-base font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-all hover:shadow-lg focus-ring">
+            <motion.div className="flex flex-col sm:flex-row gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                className="px-8 py-3 text-base font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-all hover:shadow-lg focus-ring">
                 Join the Waitlist
-              </button>
-              <button className="px-8 py-3 text-base font-medium text-primary bg-transparent border border-primary rounded-md hover:bg-primary/5 transition-all focus-ring">
-                Learn More
-              </button>
-            </div>
-            
-            <p className="text-sm text-white/70 reveal stagger-3">
-              Currently in private beta with selected partners
-            </p>
+              </motion.button>
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                onClick={() => navigation("/project-board")}
+                className="px-8 py-3 text-base font-medium text-primary bg-transparent border border-primary rounded-md hover:bg-primary/5 transition-all focus-ring">
+                Try Now
+              </motion.button>
+            </motion.div>
           </div>
           
-          <div className="relative reveal stagger-2">
-            <div className="relative z-10 rounded-xl overflow-hidden shadow-2xl hover-lift">
-              <div className="aspect-[4/3] bg-gradient-to-br from-blue-500/90 to-blue-700 p-8 flex items-center justify-center">
-                <div className="w-full max-w-md glass rounded-lg p-4 md:p-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                      <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
-                      <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="h-5 bg-white/20 rounded w-3/4"></div>
-                      <div className="h-5 bg-white/20 rounded w-1/2"></div>
-                      <div className="h-20 bg-white/10 rounded w-full"></div>
-                      <div className="flex justify-end">
-                        <div className="h-8 bg-blue-600/80 rounded w-1/4"></div>
-                      </div>
-                    </div>
-                  </div>
+          <motion.div 
+            className="relative flex flex-col items-center space-y-4"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            {/* AI Assistant Preview */}
+            <motion.div 
+              whileHover={{ scale: 1.05 }}
+              onMouseEnter={() => setShowName(true)}
+              onMouseLeave={() => setShowName(false)}
+              className="relative z-10 rounded-full overflow-hidden shadow-2xl w-60">
+              <div className="aspect-square bg-gradient-to-br from-blue-500 to-blue-700 p-8 flex items-center justify-center relative">
+                <motion.div
+                  className="absolute w-24 h-24 rounded-full border-4 border-blue-400 opacity-50"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                />
+                <motion.div
+                  className="absolute w-28 h-28 rounded-full border-4 border-blue-300 opacity-40"
+                  animate={{ scale: [1, 1.4, 1] }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                />
+                <div className="relative w-20 h-20 flex items-center justify-center bg-white rounded-full shadow-lg">
+                  <Zap size={40} className="text-blue-500 animate-pulse" />
                 </div>
               </div>
-            </div>
-            
-            {/* Decorative elements */}
-            <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse"></div>
-            <div className="absolute -top-6 -left-6 w-32 h-32 bg-blue-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-pulse" style={{ animationDelay: "1s" }}></div>
-          </div>
+            </motion.div>
+
+            {/* AI Name Reveal Animation */}
+            <AnimatePresence>
+              {showName && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute top-full mt-4 px-4 py-2 bg-white rounded-lg shadow-lg text-blue-600 text-lg font-semibold"
+                >
+                  Meet Pmai 👋
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         </div>
       </div>
     </section>
