@@ -66,8 +66,8 @@ const Hero: React.FC = () => {
                   Project Management
                 </span>
               </h1>
-              <p className="text-lg text-white/70 max-w-[600px]">
-                Revolutionize your workflow with our intelligent project assistant that understands requirements, creates tasks, and communicates with your team.
+              <p className="text-xl md:text-2xl lg:text-3xl text-white/70 max-w-[600px]">
+                An AI that understands your project requirements, creates tasks, and communicates with your team.
               </p>
             </motion.div>
             
