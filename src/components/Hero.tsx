@@ -7,6 +7,7 @@ const Hero: React.FC = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const navigation = useNavigate();
   const [showName, setShowName] = useState(false);
+  const [count, setCount] = useState(482);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -23,8 +24,18 @@ const Hero: React.FC = () => {
     const revealElements = document.querySelectorAll(".reveal");
     revealElements.forEach((el) => observerRef.current?.observe(el));
 
+    // Increment counter effect
+    const interval = setInterval(() => {
+      setCount(prev => {
+        if (prev < 500) return prev + 1;
+        clearInterval(interval);
+        return prev;
+      });
+    }, 8000);
+
     return () => {
       revealElements.forEach((el) => observerRef.current?.unobserve(el));
+      clearInterval(interval);
     };
   }, []);
 
@@ -56,19 +67,33 @@ const Hero: React.FC = () => {
             >
               <div className="inline-block">
                 <span className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                  Coming Soon
+                  Limited Access
                 </span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter">
-                AI-Powered
+                No More Reports.
                 <br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
-                  Project Management
+                  No More Meetings.
                 </span>
               </h1>
               <p className="text-xl md:text-2xl lg:text-3xl text-white/70 max-w-[600px]">
-                An AI that understands your project requirements, creates tasks, and communicates with your team.
+                AI that understands your project, creates tasks, and writes reports so you don't have to.
               </p>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 max-w-md"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+            >
+              <div className="flex items-center gap-2 text-white">
+                <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse"></div>
+                <p className="text-sm font-medium">
+                  <span className="font-bold">{count}</span> teams on waitlist • <span className="font-bold text-yellow-300">Limited spots available</span>
+                </p>
+              </div>
             </motion.div>
             
             <motion.div className="flex flex-col sm:flex-row gap-4"
@@ -78,13 +103,22 @@ const Hero: React.FC = () => {
             >
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 className="px-8 py-3 text-base font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-all hover:shadow-lg focus-ring">
-                Join the Waitlist
+                Skip the Reports Queue
               </motion.button>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 onClick={() => navigation("/project-board")}
                 className="px-8 py-3 text-base font-medium text-primary bg-transparent border border-primary rounded-md hover:bg-primary/5 transition-all focus-ring">
-                Try Now
+                See AI in Action
               </motion.button>
+            </motion.div>
+            
+            <motion.div 
+              className="text-white/70 text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              ✓ No credit card required &nbsp; ✓ First 500 get 3 months free &nbsp; ✓ Cancel anytime
             </motion.div>
           </div>
           
@@ -94,6 +128,11 @@ const Hero: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
+            {/* Time Savings Indicator */}
+            <div className="absolute top-0 -right-4 bg-green-400 text-gray-900 rounded-full px-4 py-2 text-sm font-bold shadow-lg transform rotate-12 z-20">
+              Save 15+ hours weekly
+            </div>
+            
             {/* AI Assistant Preview */}
             <motion.div 
               whileHover={{ scale: 1.05 }}
@@ -129,11 +168,31 @@ const Hero: React.FC = () => {
                 >
                   Meet 
                   <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-                  Pmai
-                    </span> 👋
+                    Pmai
+                  </span> 👋 - Your AI assistant
                 </motion.div>
               )}
             </AnimatePresence>
+            
+            {/* Sample chat bubbles */}
+            <div className="bg-white rounded-2xl shadow-xl p-4 w-full max-w-sm">
+              <div className="flex items-start gap-3 mb-3">
+                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-blue-600">TM</span>
+                </div>
+                <div className="bg-gray-100 rounded-lg p-2 text-sm">
+                  "Hey Pmai, can you update me on the landing page project?"
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                  <Zap size={16} className="text-white" />
+                </div>
+                <div className="bg-blue-50 rounded-lg p-2 text-sm border-l-2 border-blue-500">
+                  "The landing page is 78% complete. Alex completed the hero section yesterday, and Maria is currently working on responsive styles. Expected completion by Friday."
+                </div>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>

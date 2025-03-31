@@ -36,7 +36,7 @@ const Index: React.FC = () => {
       <main>
         <Hero />
         <Features />
-        <Workflow />
+        {/* <Workflow /> */}
         <GetStarted />
       </main>
       <Footer />

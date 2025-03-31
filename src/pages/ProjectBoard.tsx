@@ -1167,11 +1167,14 @@ const renderBoardView = () => (
             <Drawer>
               <DrawerTrigger asChild>
                 <Button
-                  size="icon"
+                  size="default"
                   className="bg-white/20 hover:bg-white/30 text-white border-white/20"
                   onClick={() => setIsChatOpen(true)}
                 >
-                  <MessageCircle className="h-4 w-4" />
+                  <Zap className="h-4 w-4" />
+                  <span className="text-xl font-bold bg-clip-text ">
+                    Pmai
+                  </span> 
                 </Button>
               </DrawerTrigger>
               <DrawerContent className="backdrop-blur-xl bg-gradient-to-b from-black/40 to-black/60 text-slate-100 border-t border-white/10">

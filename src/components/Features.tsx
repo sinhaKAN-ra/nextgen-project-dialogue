@@ -3,19 +3,20 @@ import React, { useEffect, useRef } from "react";
 const featuresData = [
   {
     id: 1,
-    title: "Smart Task Creation",
-    description: "AI base on the roles assigned to users, creates tasks and updates progress.",
+    title: "Eliminate Status Meetings",
+    description: "Save 5+ hours weekly by replacing status meetings with AI-powered conversations and automated updates.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
         <circle cx="12" cy="7" r="4"></circle>
       </svg>
     ),
+    benefit: "30% time savings",
   },
   {
     id: 2,
-    title: "Automated Task Creation",
-    description: "Upload requirements and let AI analyze and create detailed task breakdowns.",
+    title: "Zero-Effort Task Creation",
+    description: "Upload requirements and our AI analyzes, creates and assigns tasks based on team roles and capacity.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -24,21 +25,23 @@ const featuresData = [
         <line x1="3" y1="10" x2="21" y2="10"></line>
       </svg>
     ),
+    benefit: "85% faster planning",
   },
   {
     id: 3,
-    title: "Natural Language Updates",
-    description: "Team members communicate with AI in natural language to update progress.",
+    title: "Chat-Based Progress Updates",
+    description: "Team members simply chat with the AI to update task status - no forms, no reports, no stress.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
       </svg>
     ),
+    benefit: "3 hours saved weekly",
   },
   {
     id: 4,
-    title: "Dynamic Task Adaptation",
-    description: "AI continuously adapts task priorities and assignments based on team feedback.",
+    title: "Intelligent Workload Balancing",
+    description: "AI continuously monitors team capacity and suggests task reallocation to prevent bottlenecks.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="23 4 23 10 17 10"></polyline>
@@ -46,11 +49,12 @@ const featuresData = [
         <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
       </svg>
     ),
+    benefit: "40% fewer delays",
   },
   {
     id: 5,
-    title: "Smart Reporting",
-    description: "Generate insights and progress reports automatically with minimal input.",
+    title: "One-Click Executive Reports",
+    description: "Generate comprehensive reports for stakeholders with a single click - no more last-minute scrambles.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -60,11 +64,12 @@ const featuresData = [
         <polyline points="10 9 9 9 8 9"></polyline>
       </svg>
     ),
+    benefit: "8 hours saved monthly",
   },
   {
     id: 6,
-    title: "Intelligent Communication",
-    description: "AI facilitates team communication, reducing meetings and status updates.",
+    title: "Context-Aware Communication",
+    description: "AI remembers project history and transforms informal updates into clear, professional communications.",
     icon: (
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 8h1a4 4 0 1 1 0 8h-1"></path>
@@ -74,6 +79,7 @@ const featuresData = [
         <line x1="14" y1="2" x2="14" y2="4"></line>
       </svg>
     ),
+    benefit: "25% better clarity",
   },
 ];
 
@@ -108,14 +114,14 @@ const Features: React.FC = () => {
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
           <div className="inline-block reveal">
             <span className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-              Features
+              The Problem
             </span>
           </div>
           <h2 className="text-white/90 text-3xl md:text-4xl font-bold tracking-tight reveal">
-            Intelligent Project Management
+            Teams Waste 40% of Time on Busy Work
           </h2>
           <p className="text-lg text-white/70 reveal">
-            Our AI-powered platform streamlines your workflow with smart features designed to reduce overhead and increase productivity.
+            Status meetings, report writing, and task management eat up your most productive hours. Our AI eliminates the overhead so you can focus on real work.
           </p>
         </div>
 
@@ -129,9 +135,36 @@ const Features: React.FC = () => {
                 {feature.icon}
               </div>
               <h3 className="text-xl text-white font-semibold mb-2">{feature.title}</h3>
-              <p className="text-white/70 text-muted-foreground">{feature.description}</p>
+              <p className="text-white/70 text-muted-foreground mb-4">{feature.description}</p>
+              <div className="bg-white/20 rounded-full px-3 py-1 inline-block text-xs font-medium">
+                {feature.benefit}
+              </div>
             </div>
           ))}
+        </div>
+        
+        {/* ROI Calculator Section */}
+        <div className="mt-16 bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 max-w-2xl mx-auto reveal">
+          <h3 className="text-2xl font-bold text-white mb-4 text-center">Calculate Your Time Savings</h3>
+          <div className="space-y-6">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="p-4 bg-white/5 rounded-lg">
+                <p className="text-white/70 text-sm mb-1">Team Members</p>
+                <p className="text-white text-xl font-bold">5</p>
+              </div>
+              <div className="p-4 bg-white/5 rounded-lg">
+                <p className="text-white/70 text-sm mb-1">Hours Saved/Week</p>
+                <p className="text-white text-xl font-bold">× 8</p>
+              </div>
+              <div className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+                <p className="text-white/80 text-sm mb-1">Monthly Value</p>
+                <p className="text-white text-xl font-bold">160 hrs</p>
+              </div>
+            </div>
+            <p className="text-center text-white/70 text-sm">
+              That's equivalent to adding a full-time team member at no extra cost!
+            </p>
+          </div>
         </div>
       </div>
     </section>
