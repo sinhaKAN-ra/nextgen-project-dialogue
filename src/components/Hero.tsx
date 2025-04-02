@@ -2,12 +2,14 @@ import { MessageCircle, Mic, Zap } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
+import WaitlistComponent from "./WaitlistComponent";
 
 const Hero: React.FC = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const navigation = useNavigate();
   const [showName, setShowName] = useState(false);
   const [count, setCount] = useState(482);
+  const [showWaitlist, setShowWaitlist] = useState(false);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -101,11 +103,16 @@ const Hero: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              <motion.button 
+                whileHover={{ scale: 1.05 }} 
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowWaitlist(true)}
                 className="px-8 py-3 text-base font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-all hover:shadow-lg focus-ring">
                 Skip the Reports Queue
               </motion.button>
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              <motion.button 
+                whileHover={{ scale: 1.05 }} 
+                whileTap={{ scale: 0.95 }}
                 onClick={() => navigation("/project-board")}
                 className="px-8 py-3 text-base font-medium text-primary bg-transparent border border-primary rounded-md hover:bg-primary/5 transition-all focus-ring">
                 See AI in Action
@@ -122,80 +129,104 @@ const Hero: React.FC = () => {
             </motion.div>
           </div>
           
-          <motion.div 
-            className="relative flex flex-col items-center space-y-4"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            {/* Time Savings Indicator */}
-            <div className="absolute top-0 -right-4 bg-green-400 text-gray-900 rounded-full px-4 py-2 text-sm font-bold shadow-lg transform rotate-12 z-20">
-              Save 15+ hours weekly
-            </div>
-            
-            {/* AI Assistant Preview */}
+          
             <motion.div 
-              whileHover={{ scale: 1.05 }}
-              onMouseEnter={() => setShowName(true)}
-              onMouseLeave={() => setShowName(false)}
-              className="relative z-10 rounded-full overflow-hidden shadow-2xl w-60">
-              <div className="aspect-square bg-gradient-to-br from-blue-500 to-blue-700 p-8 flex items-center justify-center relative">
-                <motion.div
-                  className="absolute w-24 h-24 rounded-full border-4 border-blue-400 opacity-50"
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                />
-                <motion.div
-                  className="absolute w-28 h-28 rounded-full border-4 border-blue-300 opacity-40"
-                  animate={{ scale: [1, 1.4, 1] }}
-                  transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                />
-                <div className="relative w-20 h-20 flex items-center justify-center bg-white rounded-full shadow-lg">
-                  <Zap size={40} className="text-blue-500 animate-pulse" />
+              className="relative flex flex-col items-center space-y-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              {/* Time Savings Indicator */}
+              <div className="absolute top-0 -right-4 bg-green-400 text-gray-900 rounded-full px-4 py-2 text-sm font-bold shadow-lg transform rotate-12 z-20">
+                Save 15+ hours weekly
+              </div>
+              
+              {/* AI Assistant Preview */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                onMouseEnter={() => setShowName(true)}
+                onMouseLeave={() => setShowName(false)}
+                className="relative z-10 rounded-full overflow-hidden shadow-2xl w-60">
+                <div className="aspect-square bg-gradient-to-br from-blue-500 to-blue-700 p-8 flex items-center justify-center relative">
+                  <motion.div
+                    className="absolute w-24 h-24 rounded-full border-4 border-blue-400 opacity-50"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                  />
+                  <motion.div
+                    className="absolute w-28 h-28 rounded-full border-4 border-blue-300 opacity-40"
+                    animate={{ scale: [1, 1.4, 1] }}
+                    transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+                  />
+                  <div className="relative w-20 h-20 flex items-center justify-center bg-white rounded-full shadow-lg">
+                    <Zap size={40} className="text-blue-500 animate-pulse" />
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* AI Name Reveal Animation */}
+              <AnimatePresence>
+                {showName && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute top-full mt-4 px-4 py-2 bg-white rounded-lg shadow-lg text-blue-600 text-lg font-semibold"
+                  >
+                    Meet 
+                    <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                      Pmai
+                    </span> 👋 - Your AI assistant
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              {/* Sample chat bubbles */}
+              <div className="bg-white rounded-2xl shadow-xl p-4 w-full max-w-sm">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs font-bold text-blue-600">TM</span>
+                  </div>
+                  <div className="bg-gray-100 rounded-lg p-2 text-sm">
+                    "Hey Pmai, can you update me on the landing page project?"
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                    <Zap size={16} className="text-white" />
+                  </div>
+                  <div className="bg-blue-50 rounded-lg p-2 text-sm border-l-2 border-blue-500">
+                    "The landing page is 78% complete. Alex completed the hero section yesterday, and Maria is currently working on responsive styles. Expected completion by Friday."
+                  </div>
                 </div>
               </div>
             </motion.div>
+          
+          
 
-            {/* AI Name Reveal Animation */}
-            <AnimatePresence>
-              {showName && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute top-full mt-4 px-4 py-2 bg-white rounded-lg shadow-lg text-blue-600 text-lg font-semibold"
-                >
-                  Meet 
-                  <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-                    Pmai
-                  </span> 👋 - Your AI assistant
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            {/* Sample chat bubbles */}
-            <div className="bg-white rounded-2xl shadow-xl p-4 w-full max-w-sm">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-bold text-blue-600">TM</span>
-                </div>
-                <div className="bg-gray-100 rounded-lg p-2 text-sm">
-                  "Hey Pmai, can you update me on the landing page project?"
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                  <Zap size={16} className="text-white" />
-                </div>
-                <div className="bg-blue-50 rounded-lg p-2 text-sm border-l-2 border-blue-500">
-                  "The landing page is 78% complete. Alex completed the hero section yesterday, and Maria is currently working on responsive styles. Expected completion by Friday."
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </div>
+      {/* Modal approach (alternative) */}
+      {showWaitlist && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={() => setShowWaitlist(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="max-w-2xl w-full"
+            onClick={e => e.stopPropagation()}
+          >
+            <WaitlistComponent />
+          </motion.div>
+        </motion.div>
+      )}
     </section>
   );
 };

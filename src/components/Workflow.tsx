@@ -1,46 +1,61 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const workflowSteps = [
   {
     id: 1,
-    title: "User Login & Role Assignment",
-    description: "Users sign in and receive personalized roles based on their expertise.",
+    title: "One-Time Team Setup",
+    description: "Set up your team structure, roles, and project objectives just once - the AI remembers everything.",
+    before: "Manual team management and role assignments",
+    after: "Automatic role recognition and task matching",
     imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E",
   },
   {
     id: 2,
-    title: "Project & Document Upload",
-    description: "Upload business requirements document for AI analysis.",
+    title: "Smart Document Processing",
+    description: "Upload your business requirements once, and let AI create tasks, estimates, and assignments.",
+    before: "Hours spent breaking down documents into tasks",
+    after: "Instant task creation from any document format",
     imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'%3E%3C/path%3E%3Cpolyline points='14 2 14 8 20 8'%3E%3C/polyline%3E%3Cline x1='12' y1='18' x2='12' y2='12'%3E%3C/line%3E%3Cline x1='9' y1='15' x2='15' y2='15'%3E%3C/line%3E%3C/svg%3E",
   },
   {
     id: 3,
-    title: "AI Task Generation",
-    description: "AI analyzes requirements and creates task breakdowns with assignments.",
-    imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E",
-  },
-  {
-    id: 4,
-    title: "Team Collaboration with AI",
-    description: "Team members discuss tasks with AI and update progress in natural language.",
+    title: "Natural Language Updates",
+    description: "Team members update progress in plain English - AI handles the rest.",
+    before: "Complex status updates and meetings",
+    after: "Simple chat-like progress updates",
     imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'%3E%3C/path%3E%3C/svg%3E",
   },
   {
+    id: 4,
+    title: "AI-Powered Insights",
+    description: "Get real-time insights, predictions, and recommendations from your AI assistant.",
+    before: "Manual analysis and reporting",
+    after: "Instant AI-driven insights and forecasts",
+    imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='20' x2='18' y2='10'%3E%3C/line%3E%3Cline x1='12' y1='20' x2='12' y2='4'%3E%3C/line%3E%3Cline x1='6' y1='20' x2='6' y2='14'%3E%3C/line%3E%3C/svg%3E",
+  },
+  {
     id: 5,
-    title: "Dynamic Task Adjustment",
-    description: "AI continuously optimizes tasks based on feedback and progress.",
-    imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='23 4 23 10 17 10'%3E%3C/polyline%3E%3Cpolyline points='1 20 1 14 7 14'%3E%3C/polyline%3E%3Cpath d='M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15'%3E%3C/path%3E%3C/svg%3E",
+    title: "Automated Reports",
+    description: "AI generates comprehensive reports automatically - no manual work needed.",
+    before: "Hours of report writing and formatting",
+    after: "One-click professional reports",
+    imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'%3E%3C/path%3E%3Cpolyline points='14 2 14 8 20 8'%3E%3C/polyline%3E%3Cline x1='16' y1='13' x2='8' y2='13'%3E%3C/line%3E%3Cline x1='16' y1='17' x2='8' y2='17'%3E%3C/line%3E%3Cpolyline points='10 9 9 9 8 9'%3E%3C/polyline%3E%3C/svg%3E",
   },
   {
     id: 6,
-    title: "Automated Report Generation",
-    description: "AI generates comprehensive reports on project status and team performance.",
-    imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z'%3E%3C/path%3E%3Cpolyline points='14 2 14 8 20 8'%3E%3C/polyline%3E%3Cline x1='16' y1='13' x2='8' y2='13'%3E%3C/line%3E%3Cline x1='16' y1='17' x2='8' y2='17'%3E%3C/line%3E%3Cpolyline points='10 9 9 9 8 9'%3E%3C/polyline%3E%3C/svg%3E",
-  },
+    title: "Continuous Learning",
+    description: "AI learns from your team's patterns and improves over time.",
+    before: "Static processes and workflows",
+    after: "Adaptive, learning system",
+    imageUrl: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 2v20M2 12h20'%3E%3C/path%3E%3Ccircle cx='12' cy='12' r='10'%3E%3C/circle%3E%3C/svg%3E",
+  }
 ];
 
 const Workflow: React.FC = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
   
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -61,6 +76,21 @@ const Workflow: React.FC = () => {
       revealElements.forEach((el) => observerRef.current?.unobserve(el));
     };
   }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      // TODO: Replace with actual API endpoint
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated API call
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Failed to submit:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <section id="workflow" className="py-24 bg-gradient-to-b from-slate-900 to-blue-900 relative">
@@ -115,6 +145,43 @@ const Workflow: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Waitlist Section */}
+          <div className="mt-16 text-center reveal">
+            <div className="max-w-2xl mx-auto bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+              <h3 className="text-2xl font-bold text-white mb-4">
+                Ready to Transform Your Project Management?
+              </h3>
+              <p className="text-white/70 mb-6">
+                Join our waitlist to be among the first to experience AI-powered project management.
+                Early access members get 3 months free!
+              </p>
+              
+              {!isSubmitted ? (
+                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? "Joining..." : "Join Waitlist"}
+                  </button>
+                </form>
+              ) : (
+                <div className="text-green-400 font-medium">
+                  Thanks for joining! We'll be in touch soon.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

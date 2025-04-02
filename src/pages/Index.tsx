@@ -1,9 +1,11 @@
-
 import React, { useEffect } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Features from "@/components/Features";
 import Workflow from "@/components/Workflow";
+import DemoExperience from "@/components/DemoExperience";
+import HowWeDifferent from "@/components/HowWeDifferent";
+import Testimonials from "@/components/Testimonials";
 import GetStarted from "@/components/GetStarted";
 import Footer from "@/components/Footer";
 
@@ -37,6 +39,9 @@ const Index: React.FC = () => {
         <Hero />
         <Features />
         {/* <Workflow /> */}
+        <DemoExperience />
+        <HowWeDifferent />
+        {/* <Testimonials /> */}
         <GetStarted />
       </main>
       <Footer />

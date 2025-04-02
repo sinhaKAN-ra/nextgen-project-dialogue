@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, Check } from "lucide-react";
+import { ArrowRight, Check, Zap, Crown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
@@ -48,34 +48,35 @@ const GetStarted = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
+        {/* Early Access Benefits */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 reveal">
           <div className="bg-card rounded-2xl p-6 shadow-sm hover-lift border border-white/10">
             <div className="bg-primary/10 text-primary rounded-full w-12 h-12 flex items-center justify-center mb-4">
-              <span className="font-bold text-lg">1</span>
+              <Crown className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Quick Setup</h3>
+            <h3 className="text-xl font-semibold mb-2">Founding Member Status</h3>
             <p className="text-muted-foreground mb-4">
-              Create your account and tell us about your team structure in less than 5 minutes.
+              Lock in lifetime discounts and get exclusive access to new features.
             </p>
           </div>
 
           <div className="bg-card rounded-2xl p-6 shadow-sm hover-lift border border-white/10">
             <div className="bg-primary/10 text-primary rounded-full w-12 h-12 flex items-center justify-center mb-4">
-              <span className="font-bold text-lg">2</span>
+              <Zap className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">AI Onboarding</h3>
+            <h3 className="text-xl font-semibold mb-2">3 Months Free</h3>
             <p className="text-muted-foreground mb-4">
-              Upload one project document and watch our AI analyze it and create your first task board.
+              First 500 teams get three months of free access to all features.
             </p>
           </div>
 
           <div className="bg-card rounded-2xl p-6 shadow-sm hover-lift border border-white/10">
             <div className="bg-primary/10 text-primary rounded-full w-12 h-12 flex items-center justify-center mb-4">
-              <span className="font-bold text-lg">3</span>
+              <Sparkles className="w-6 h-6" />
             </div>
-            <h3 className="text-xl font-semibold mb-2">Instant Results</h3>
+            <h3 className="text-xl font-semibold mb-2">Priority Support</h3>
             <p className="text-muted-foreground mb-4">
-              See immediate time savings as the AI handles status tracking, updates, and report generation.
+              Get dedicated support and early access to new AI features.
             </p>
           </div>
         </div>
@@ -93,7 +94,14 @@ const GetStarted = () => {
             </div>
             
             <ul className="space-y-3 mb-6">
-              {['All core AI features', 'Unlimited projects', 'Priority access to new features', 'Email + chat support'].map((item, i) => (
+              {[
+                'All core AI features',
+                'Unlimited projects',
+                'Priority access to new features',
+                'Email + chat support',
+                'Custom AI training',
+                'Advanced analytics'
+              ].map((item, i) => (
                 <li key={i} className="flex items-center gap-2">
                   <Check size={16} className="text-green-400 flex-shrink-0" />
                   <span className="text-white/80">{item}</span>
@@ -150,7 +158,9 @@ const GetStarted = () => {
                 'Advanced security & compliance',
                 'Custom AI training on company data',
                 'Dedicated account manager',
-                'Priority 24/7 support'
+                'Priority 24/7 support',
+                'Custom integrations',
+                'SLA guarantees'
               ].map((item, i) => (
                 <li key={i} className="flex items-center gap-2">
                   <Check size={16} className="text-white flex-shrink-0" />
@@ -189,7 +199,7 @@ const GetStarted = () => {
             </Button>
           </Link>
           <p className="mt-4 text-sm text-white/70">
-            No credit card required. See the AI in action before you commit.
+            No credit card required. See the demo board in action before you commit.
           </p>
         </div>
       </div>
