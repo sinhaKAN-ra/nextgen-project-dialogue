@@ -53,7 +53,7 @@ const ChatDrawer: React.FC<ChatDrawerProps> = ({
           animate={{ x: 0 }}
           exit={{ x: '100%' }}
           transition={{ type: 'spring', damping: 20 }}
-          className="fixed inset-y-0 right-0 w-96 bg-background border-l shadow-lg z-50 flex flex-col"
+          className="fixed inset-y-10 right-100 w-296 bg-background border-l shadow-lg z-50 flex flex-col"
         >
           <div className="p-4 border-b flex items-center justify-between">
             <h2 className="text-lg font-semibold">Chat with AI Assistant</h2>
