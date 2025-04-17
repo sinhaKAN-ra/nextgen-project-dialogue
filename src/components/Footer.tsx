@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
               nomore.report
             </span>
           </div>
-          <p className="text-sm text-white/70">
+          <p className="text-sm  text-gradient-to-r from-blue-400 to-purple-400">
             Revolutionizing project management with AI technology
           </p>
           <div className="flex items-center space-x-4">

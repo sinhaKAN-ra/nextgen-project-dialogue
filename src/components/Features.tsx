@@ -115,7 +115,7 @@ const Features: React.FC = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-6">
           <div className="inline-block reveal">
-            <span className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+            <span className="px-3 py-1 text-xs font-medium  bg-gradient-to-r from-blue-400 to-purple-400   rounded-full">
               The Problem
             </span>
           </div>
@@ -141,7 +141,7 @@ const Features: React.FC = () => {
               </div>
               <h3 className="text-xl text-white font-semibold mb-2">{feature.title}</h3>
               <p className=" text-white/80 mb-4">{feature.description}</p>
-              <div className="bg-white/60 rounded-full px-3 py-1 inline-block text-xs font-medium">
+              <div className="bg-white/60 rounded-full px-3 py-1 inline-block text-xs font-medium  bg-gradient-to-r from-blue-400 to-purple-400">
                 {feature.benefit}
               </div>
             </div>
@@ -161,9 +161,9 @@ const Features: React.FC = () => {
                 <p className="text-white/70 text-sm mb-1">Hours Saved/Week</p>
                 <p className="text-white text-xl font-bold">× 8</p>
               </div>
-              <div className="p-4 bg-gradient-to-r from-[#283048] to-[#859398] rounded-lg">
-                <p className="text-white/80 text-sm mb-1">Monthly Value</p>
-                <p className="text-white text-xl font-bold">160 hrs</p>
+              <div className="p-4 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg">
+                <p className=" text-sm mb-1">Monthly Value</p>
+                <p className=" text-xl font-bold">160 hrs</p>
               </div>
             </div>
             <p className="text-center text-white/70 text-sm">

@@ -86,7 +86,7 @@ const DemoExperience: React.FC = () => {
               transition={{ duration: 0.6 }}
               className="bg-white/15 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 p-8 md:p-16 max-w-3xl w-full mx-auto flex flex-col items-center text-center"
             >
-              <span className="mb-2 px-4 py-1 bg-white/50 text-slate-800 rounded-full font-semibold text-xs tracking-wide">Live Product Demo</span>
+              <span className="mb-2 px-4 py-1 bg-white/50 text-slate-800 rounded-full font-semibold text-xs tracking-wide  bg-gradient-to-r from-blue-400 to-purple-400">Live Product Demo</span>
               <h2 className="lg:text-6xl tracking-tighter text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#283048] to-[#555f62] mb-8 text-center drop-shadow-2xl">
                 Experience the Change</h2>
               <p className="text-white/80 text-lg mb-8">
@@ -95,7 +95,7 @@ const DemoExperience: React.FC = () => {
                 className="bg-gradient-to-r from-slate-800 to-slate-900 text-white font-semibold px-8 py-3 rounded-full shadow-lg hover:opacity-90 transition-all text-lg"
                 onClick={() => setStarted(true)}
               >
-                Start Demo
+                Start
               </button>
             </motion.div>
           ) : (
@@ -107,8 +107,8 @@ const DemoExperience: React.FC = () => {
               transition={{ duration: 0.6 }}
               className="bg-white/30 backdrop-blur-lg rounded-3xl shadow-xl p-10 max-w-xl mx-auto flex flex-col items-center text-center border border-white/20 hover:scale-105 transition-transform duration-300"
             >
-              <div className="mb-4 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-800 to-slate-900 shadow-lg">
-                {React.createElement(demoSteps[currentStep].icon, { size: 36, className: 'text-white' })}
+              <div className="mb-4 flex items-center justify-center w-16 h-16 rounded-full  bg-gradient-to-r from-blue-400 to-purple-400 shadow-lg">
+                {React.createElement(demoSteps[currentStep].icon, { size: 36, className: 'text-white ' })}
               </div>
               <h3 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2 drop-shadow-lg">{demoSteps[currentStep].title}</h3>
               <p className="text-slate-800/80 text-lg mb-4 font-medium">{demoSteps[currentStep].description}</p>
@@ -142,9 +142,12 @@ const DemoExperience: React.FC = () => {
                 ) : (
                   <button
                     className="flex items-center justify-center px-6 py-2 rounded-full bg-gradient-to-r from-slate-800 to-slate-900 text-white font-bold shadow hover:opacity-90 transition-all"
-                    onClick={() => setStarted(false)}
+                    onClick={() => {
+                      setStarted(false)
+                      setCurrentStep(0)
+                    }}
                   >
-                    <span className="mr-2">Restart Demo</span>
+                    <span className="mr-2">Restart</span>
                     <RefreshCw className="h-4 w-4" />
                   </button>
                 )}
