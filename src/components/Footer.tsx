@@ -1,64 +1,58 @@
 import React from "react";
+import { motion } from 'framer-motion';
+import { Twitter, Linkedin } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-black border-t border-border py-12">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <span className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
-                nomore.report
-              </span>
-            </div>
-            <p className="text-sm text-white/70">
-              Revolutionizing project management with AI technology
-            </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-white/70 hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-                </svg>
-              </a>
-              <a href="#" className="text-white/70 hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-                  <rect x="2" y="9" width="4" height="12"></rect>
-                  <circle cx="4" cy="4" r="2"></circle>
-                </svg>
-              </a>
-            </div>
+    <motion.footer initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.3 }} className="relative bg-gradient-to-b from-[#859398] to-[#283048] text-white py-6 overflow-hidden">
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-lg pointer-events-none z-0"></div>
+      <div className="relative z-10 container mx-auto px-4 md:px-6 grid grid-cols-2 md:grid-cols-2 gap-8">
+        <div className="space-y-4">
+          <div className="flex items-center">
+            <span className="text-xl font-semibold bg-clip-text text-transparent bg-gradient-to-r from-[#283048] to-[#68767d]">
+              nomore.report
+            </span>
           </div>
-          
-          <div className="space-y-4">
-            <h4 className="text-sm font-medium uppercase tracking-wider text-white">Legal</h4>
-            <ul className="space-y-2">
-              <li>
-                <a href="#" className="text-white/70 hover:text-white transition-colors text-sm">
-                  Terms of Service
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/70 hover:text-white transition-colors text-sm">
-                  Privacy Policy
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-white/70 hover:text-white transition-colors text-sm">
-                  Cookie Policy
-                </a>
-              </li>
-            </ul>
+          <p className="text-sm text-white/70">
+            Revolutionizing project management with AI technology
+          </p>
+          <div className="flex items-center space-x-4">
+            <a href="#" className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-all">
+              <Twitter className="h-5 w-5 text-white" />
+            </a>
+            <a href="#" className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition-all">
+              <Linkedin className="h-5 w-5 text-white" />
+            </a>
           </div>
         </div>
         
-        <div className="mt-12 pt-8 border-t border-border text-center">
-          <p className="text-sm text-white/70">
-            © {new Date().getFullYear()} ProjectAI. All rights reserved.
-          </p>
+        <div className="space-y-4">
+          <h4 className="text-sm font-medium uppercase tracking-wider text-white">Legal</h4>
+          <ul className="space-y-2">
+            <li>
+              <a href="#" className="text-white/70 hover:text-white transition-colors text-sm">
+                Terms of Service
+              </a>
+            </li>
+            <li>
+              <a href="#" className="text-white/70 hover:text-white transition-colors text-sm">
+                Privacy Policy
+              </a>
+            </li>
+            <li>
+              <a href="#" className="text-white/70 hover:text-white transition-colors text-sm">
+                Cookie Policy
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
-    </footer>
+      <div className="relative z-10 mt-12 pt-8 border-t border-white/20 text-center">
+        <p className="text-xs text-white/70">
+          {new Date().getFullYear()} nomore.report. All rights reserved.
+        </p>
+      </div>
+    </motion.footer>
   );
 };
 

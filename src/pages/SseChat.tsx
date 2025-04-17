@@ -1,288 +1,405 @@
-// SseChat.tsx (Full Code with Task List Parsing/Rendering)
+// SseChat.tsx (Updated with task creation, status updates and suggestions)
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-// Make sure these paths are correct for your project structure
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowUpIcon, RefreshCw, AlertCircle, ListChecks } from 'lucide-react';
+import { ArrowUpIcon, RefreshCw, AlertCircle, ListChecks, Plus, MessageSquarePlus, ClipboardCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
-// Assuming react-router-dom is installed and configured
-import { Link } from 'react-router-dom';
+import TaskCreationForm, { TaskFormData } from '../components/TaskCreationForm';
+import TaskStatusUpdate from '../components/TaskUpdateForm';
+import { format } from 'date-fns';
+import { parseContent, parseTaskList, parseTaskUpdate } from './chatUtils';
+import ChatMessageList from './components/ChatMessageList';
 
-// Interface for parsed task details
-interface TaskDetail {
-  id: string;
-  name: string;
-  assignee: string;
-  status: string;
-  dueDate: string | null;
+// Interfaces
+interface TaskDetail { 
+  id: string; 
+  name: string; 
+  assignee?: string; // From frontend or backend
+  assignee_name?: string; // From backend
+  status: string; 
+  dueDate?: string | null; 
+  priority?: 'low' | 'medium' | 'high';
+  description?: string;
 }
 
-// Updated message type
-type Message = {
-  id: string;
-  content: string; // Can be title for task lists
-  sender: 'user' | 'ai' | 'system';
-  timestamp: Date;
-  type?: 'text' | 'task_list'; // Type to distinguish rendering
-  tasks?: TaskDetail[]; // Optional array for task lists
+export type Message = {
+  id: string; 
+  sender: 'user' | 'ai' | 'system'; 
+  timestamp: Date; 
+  content?: string;
+  type?: 'text' | 'task_list' | 'task_update' | 'task_history' | 'action_request' | 'connection';
+  tasks?: TaskDetail[];
+  task?: TaskDetail; // Single task for updates
+  history?: { ts: string; status: string; by?: string; comment?: string }[];
+  suggested_replies?: string[];
+  action?: string; 
+  prefill?: Partial<TaskFormData>;
+  recipient_name?: string;
+  context?: string;
+  about_user?: string;
+  recipient_id?: string;
+  requesting_user_id?: string;
 };
 
-// User selection options
-type UserOption = {
-  id: string;
-  name: string;
-  role: string;
+type UserOption = { 
+  id: string; 
+  name: string; 
+  role: string; 
 };
-
-// Helper function to parse task list string from backend
-const parseTaskList = (content: string): TaskDetail[] | null => {
-    // Check if the content starts with the expected header
-    if (!content || !content.trim().startsWith("Here are the")) {
-        return null;
-    }
-    // Split into lines, remove header, filter empty lines
-    const lines = content.split('\n').slice(1).filter(line => line.trim() !== '');
-    const tasks: TaskDetail[] = [];
-    // Regex to capture task details, making Due Date optional
-    // Example line: "- ID: task_abc, Name: "Do Thing", Assignee: John, Status: Pending (Due: 2025-12-31)"
-    // Or:           "- ID: task_xyz, Name: "Another Thing", Assignee: Sarah, Status: In Progress"
-    const taskRegex = /- ID: (.*?), Name: "(.*?)", Assignee: (.*?), Status: (.*?)(?: \(Due: (.*?)\))?$/;
-
-    lines.forEach(line => {
-        const match = line.trim().match(taskRegex);
-        if (match) {
-            // Extract matched groups, providing defaults if null/undefined
-            tasks.push({
-                id: match[1]?.trim() || 'N/A',
-                name: match[2]?.trim() || 'N/A',
-                assignee: match[3]?.trim() || 'N/A',
-                status: match[4]?.trim() || 'N/A',
-                dueDate: match[5]?.trim() || null, // Capture group 5 if it exists
-            });
-        } else {
-            console.warn("Failed to parse task line:", line.trim()); // Log lines that don't match
-        }
-    });
-
-    // Return tasks only if some were successfully parsed
-    return tasks.length > 0 ? tasks : null;
-};
-
 
 const SseChat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isConnected, setIsConnected] = useState(false);
-  const [isAiSpeaking, setIsAiSpeaking] = useState(false); // Controls typing indicator
-  const [selectedUserId, setSelectedUserId] = useState('user_manager'); // Default user
+  const [isAiSpeaking, setIsAiSpeaking] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState('user_manager');
   const [connectionError, setConnectionError] = useState<string | null>(null);
-  const { toast } = useToast();
+  const [isTaskFormOpen, setIsTaskFormOpen] = useState(false);
+  const [taskFormInitialData, setTaskFormInitialData] = useState<Partial<TaskFormData>>({});
+  const [currentSuggestedReplies, setCurrentSuggestedReplies] = useState<string[]>([]);
+  const [isStatusUpdateOpen, setIsStatusUpdateOpen] = useState(false);
+  const [currentTaskForUpdate, setCurrentTaskForUpdate] = useState<TaskDetail | null>(null);
 
+  const { toast } = useToast();
   const messageEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
-  // Define user options for the dropdown
   const userOptions: UserOption[] = [
     { id: 'user_manager', name: 'Manager', role: 'Project Manager' },
     { id: 'user_sarah', name: 'Sarah', role: 'Software Engineer' },
     { id: 'user_john', name: 'John', role: 'Frontend Developer' }
   ];
 
-  // Function to connect/reconnect to the SSE endpoint
+  // Connect to SSE endpoint
   const connectSSE = useCallback(() => {
-    // Close any existing connection
+    // Close existing connection if any
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
-      console.log('Previous SSE connection closed.');
     }
     eventSourceRef.current = null;
-
-    // Reset state
     setConnectionError(null);
-    setIsConnected(false); // Assume disconnected until connection opens
-    setMessages([]); // Clear messages for new connection/user
+    setIsConnected(false);
+    setMessages([]);
+    setCurrentSuggestedReplies([]);
 
     const sseUrl = `http://localhost:8000/sse/chat-stream/${selectedUserId}`;
-    console.log(`Attempting to connect to SSE: ${sseUrl}`);
-
+    console.log(`Attempting SSE: ${sseUrl}`);
+    
     try {
       const eventSource = new EventSource(sseUrl);
       eventSourceRef.current = eventSource;
-
+      
       eventSource.onopen = () => {
-        console.log('SSE connection successfully opened');
+        console.log('SSE opened');
         setIsConnected(true);
-        setConnectionError(null); // Clear error on successful connection
-        // Optionally send a welcome message *from the client* if needed
-        // setMessages(prev => [...prev, { id: Date.now().toString(), content: `Connected as ${selectedUserId}`, sender: 'system', timestamp: new Date(), type: 'text' }]);
+        setConnectionError(null);
       };
 
       eventSource.onmessage = (event) => {
-        console.log('SSE raw data received:', event.data);
+        console.log('SSE raw data:', event.data);
+        setIsAiSpeaking(true);
+        setCurrentSuggestedReplies([]); // Clear old suggestions first
+
         try {
           const data = JSON.parse(event.data);
+          const messageId = data.timestamp || Date.now().toString();
+          const messageTimestamp = new Date(data.timestamp || Date.now());
 
-          // Ignore pure heartbeat comments if they arrive here (though they shouldn't)
-          if (event.data.startsWith(':')) return;
+          let messageToAdd: Message | null = null;
 
-          // Ignore connection message if already handled or not needed in chat
-          if (data.type === 'connection') {
-             console.log('SSE connection confirmation message received.');
-             return;
-          }
-          if (data.type === 'heartbeat') {
-             console.log('SSE heartbeat message received.');
-             return;
-          }
-
-
-          setIsAiSpeaking(true); // Show typing indicator
-
-          // --- PARSE AND ADD MESSAGE ---
-          let newMessageData: Message;
-          const parsedTasks = parseTaskList(data.content);
-
-          if (parsedTasks) {
-            // It's a task list
-            newMessageData = {
-              id: data.timestamp || Date.now().toString(), // Use server timestamp if available
-              content: data.content.split('\n')[0], // Use first line as title
-              sender: data.sender || 'ai',
-              timestamp: new Date(data.timestamp || Date.now()),
-              type: 'task_list',
-              tasks: parsedTasks
-            };
-          } else {
-            // It's a normal text message
-            newMessageData = {
-              id: data.timestamp || Date.now().toString(),
+          // Render notification for connection/system messages
+          if (data.type === 'connection' || data.sender === 'system') {
+            messageToAdd = {
+              id: messageId,
               content: data.content,
-              sender: data.sender || 'ai',
-              timestamp: new Date(data.timestamp || Date.now()),
-              type: 'text'
+              sender: data.sender || 'system',
+              timestamp: messageTimestamp,
+              type: 'connection',
             };
           }
 
-          setMessages(prev => [...prev, newMessageData]);
+          // Handle ACTION messages
+          else if (data.action === 'show_task_form') {
+            console.log("Received action: show_task_form", data.prefill);
+            setTaskFormInitialData(data.prefill || {});
+            setTimeout(() => setIsTaskFormOpen(true), 100); // Open form
+            
+            // Add the AI message that triggered the form (optional)
+            if (data.content) {
+              messageToAdd = {
+                id: messageId,
+                content: parseContent(data.content),
+                sender: data.sender || 'ai',
+                timestamp: messageTimestamp,
+                type: 'text'
+              };
+            } else {
+              setIsAiSpeaking(false); // No message content, just action
+            }
+          }
+          // Handle CONTENT messages
+          else if (data.content) {
+            // Prefer backend-structured fields for type, tasks, task
+            const contentStr = parseContent(data.content);
+            let msgType = data.type || undefined;
+            let msgTasks = data.tasks || undefined;
+            let msgTask = data.task || undefined;
 
-          // Hide typing indicator after a short delay
-          setTimeout(() => setIsAiSpeaking(false), 500); // Shorter delay maybe
+            if (msgType === 'task_list' && Array.isArray(msgTasks)) {
+              messageToAdd = {
+                id: messageId,
+                content: contentStr.split('\n')[0],
+                sender: data.sender || 'ai',
+                timestamp: messageTimestamp,
+                type: 'task_list',
+                tasks: msgTasks
+              };
+            } else if (msgType === 'task_update' && msgTask) {
+              messageToAdd = {
+                id: messageId,
+                content: contentStr,
+                sender: data.sender || 'ai',
+                timestamp: messageTimestamp,
+                type: 'task_update',
+                task: msgTask
+              };
+            } else if (msgType === 'task_history' && Array.isArray(data.history)) {
+              messageToAdd = {
+                id: messageId,
+                sender: data.sender || 'ai',
+                timestamp: messageTimestamp,
+                type: 'task_history',
+                task: data.task || undefined,
+                history: data.history
+              };
+            } else {
+              // Fallback: try to parse from content if type/tasks/task not present
+              const parsedTasks = parseTaskList(contentStr);
+              const parsedTaskUpdate = parseTaskUpdate(contentStr);
+              if (parsedTasks) {
+                messageToAdd = {
+                  id: messageId,
+                  content: contentStr.split('\n')[0],
+                  sender: data.sender || 'ai',
+                  timestamp: messageTimestamp,
+                  type: 'task_list',
+                  tasks: parsedTasks
+                };
+              } else if (parsedTaskUpdate) {
+                messageToAdd = {
+                  id: messageId,
+                  content: contentStr,
+                  sender: data.sender || 'ai',
+                  timestamp: messageTimestamp,
+                  type: 'task_update',
+                  task: parsedTaskUpdate
+                };
+              } else {
+                messageToAdd = {
+                  id: messageId,
+                  content: contentStr,
+                  sender: data.sender || 'ai',
+                  timestamp: messageTimestamp,
+                  type: 'text'
+                };
+              }
+            }
 
+            // Check for suggestions attached to this content message
+            if (data.suggested_replies && Array.isArray(data.suggested_replies)) {
+              console.log("Received suggestions:", data.suggested_replies);
+              setCurrentSuggestedReplies(data.suggested_replies);
+              if (messageToAdd) {
+                messageToAdd.suggested_replies = data.suggested_replies;
+              }
+            }
+          }
+          // Ignore system/connection messages
+          else if (data.sender === 'system') {
+            console.log("System message ignored for chat display:", data.content);
+            setIsAiSpeaking(false);
+          } else {
+            console.warn("Received unhandled message structure:", data);
+            setIsAiSpeaking(false);
+          }
+
+          // Add the message to state if one was created
+          if (messageToAdd) {
+            setMessages(prev => [...prev, messageToAdd]);
+          }
+
+          // Turn off speaking indicator
+          if (messageToAdd || data.action) {
+            setTimeout(() => setIsAiSpeaking(false), 300);
+          } else {
+            setIsAiSpeaking(false);
+          }
         } catch (e) {
-          console.error('Error processing SSE data:', e, "Raw data:", event.data);
-          // Add raw data as system message if parsing fails
-           setMessages(prev => [...prev, { id: Date.now().toString(), content: `Received unparseable data: ${event.data}`, sender: 'system', timestamp: new Date(), type: 'text' }]);
+          console.error('SSE processing error:', e);
+          setMessages(prev => [
+            ...prev,
+            {
+              id: Date.now().toString(),
+              content: `Unparseable: ${event.data}`,
+              sender: 'system',
+              timestamp: new Date(),
+              type: 'text'
+            }
+          ]);
           setIsAiSpeaking(false);
         }
       };
 
       eventSource.onerror = (error) => {
-        console.error('SSE connection error occurred:', error);
+        console.error('SSE error:', error);
         setIsConnected(false);
-        setConnectionError('Connection error. Server might be down or unreachable. Try reconnecting.');
-        // Don't close here immediately, browser might attempt reconnect based on standard
+        setConnectionError('Connection error.');
         if (eventSourceRef.current) {
-             eventSourceRef.current.close(); // Explicitly close if error seems fatal
-             eventSourceRef.current = null;
+          eventSourceRef.current.close();
+          eventSourceRef.current = null;
         }
       };
-
     } catch (error) {
-      console.error('Failed to create SSE EventSource:', error);
+      console.error('SSE init error:', error);
       setIsConnected(false);
-      setConnectionError(`Failed to initiate connection: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setConnectionError(`Connection failed: ${error instanceof Error ? error.message : 'Unknown'}`);
     }
-  }, [selectedUserId]); // Depend only on selectedUserId for initiating connection
+  }, [selectedUserId]);
 
-  // Function to send message via POST
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !isConnected) {
-        toast({ title: 'Cannot send', description: !isConnected ? 'Not connected.' : 'Message is empty.', variant: 'destructive'});
-        return;
+  // Send message to backend
+  const sendMessage = async (messageText: string) => {
+    if (!messageText || !isConnected) {
+      toast({ title: 'Cannot send', variant: 'destructive' });
+      return;
     }
-
-    const messageToSend = newMessage;
-    setNewMessage(''); // Clear input immediately
-
+    
+    if (messageText === newMessage.trim()) {
+      setNewMessage('');
+    }
+    
+    setCurrentSuggestedReplies([]);
+    
     const userMessage: Message = {
-      id: Date.now().toString(), // Use temp ID for user message
-      content: messageToSend,
+      id: Date.now().toString(),
+      content: messageText,
       sender: 'user',
       timestamp: new Date(),
       type: 'text'
     };
-    setMessages(prev => [...prev, userMessage]); // Display user message optimistically
-    setIsAiSpeaking(true); // Assume AI will reply
-
+    
+    setMessages(prev => [...prev, userMessage]);
+    setIsAiSpeaking(true);
+    
     try {
       const response = await fetch(`http://localhost:8000/sse/chat/${selectedUserId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        mode: 'cors', // Important for cross-origin requests
-        body: JSON.stringify({ message: messageToSend })
+        mode: 'cors',
+        body: JSON.stringify({ message: messageText })
       });
-
-      // The actual AI reply will come via the SSE 'onmessage' handler.
-      // Here, we just check if the POST was accepted by the server.
+      
       if (!response.ok) {
-          const errorData = await response.json().catch(() => ({ message: `Server returned ${response.status}` }));
-          // Display error as system message, SSE handler will turn off indicator
-          throw new Error(errorData.detail || errorData.message || `Request failed with status ${response.status}`);
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || `Request failed: ${response.status}`);
       }
-
-      const data = await response.json(); // Check if backend indicates success
-      if (!data.success) {
-          // Maybe log a warning, but wait for potential SSE error message
-          console.warn('Backend POST response indicated an issue:', data.detail || data.message);
-      }
-       // Let the SSE handler turn off the speaking indicator when the *actual* reply arrives
-
+      
+      const data = await response.json();
+      if (!data.success) console.warn('Backend POST issue:', data.detail);
     } catch (error) {
-      setIsAiSpeaking(false); // Turn off indicator on send error
-      console.error('Error sending message:', error);
-      const errorMessageContent = `Send Error: ${error instanceof Error ? error.message : 'Failed to send message'}`;
-      const errorSysMessage: Message = {
-        id: Date.now().toString(),
-        content: errorMessageContent,
-        sender: 'system',
-        timestamp: new Date(),
-        type: 'text'
-      };
-      setMessages(prev => [...prev, errorSysMessage]); // Show error in chat
-      toast({ title: 'Error', description: errorMessageContent, variant: 'destructive' });
+      setIsAiSpeaking(false);
+      console.error('Send error:', error);
+      const errorMsg = `Send Error: ${error instanceof Error ? error.message : 'Unknown'}`;
+      setMessages(prev => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          content: errorMsg,
+          sender: 'system',
+          timestamp: new Date(),
+          type: 'text'
+        }
+      ]);
+      toast({ title: 'Error', description: errorMsg, variant: 'destructive' });
     }
   };
 
-  // Scroll to bottom when messages update
+  // Handle sending message from input
+  const handleSendClick = () => {
+    const msg = newMessage.trim();
+    if (msg) sendMessage(msg);
+  };
+
+  // Handle suggested reply click
+  const handleSuggestionClick = (suggestion: string) => {
+    sendMessage(suggestion);
+  };
+
+  // Handle task form submission
+  const handleTaskFormSubmit = async (formData: TaskFormData) => {
+    setIsTaskFormOpen(false);
+    
+    const formattedDate = formData.dueDate ? format(formData.dueDate, 'yyyy-MM-dd') : 'null';
+    const priority = formData.priority || 'medium';
+    
+    const command = `/create_task_form name="${formData.name}" assignee="${formData.assignee}" due="${formattedDate}" priority="${priority}" description="${formData.description || ''}"`;
+    await sendMessage(command);
+  };
+
+  // Handle manual task form open
+  const handleManualTaskFormOpen = () => {
+    setTaskFormInitialData({
+      assignee: selectedUserId !== 'user_manager' ? selectedUserId : ''
+    });
+    setIsTaskFormOpen(true);
+  };
+
+  // Handle status update click on task
+  const handleTaskStatusUpdateClick = (task: TaskDetail) => {
+    setCurrentTaskForUpdate(task);
+    setIsStatusUpdateOpen(true);
+  };
+
+  // Handle status update submission
+  const handleStatusUpdateSubmit = async ({ status, comment }: { status: string; comment: string }) => {
+    setIsStatusUpdateOpen(false);
+    
+    if (!currentTaskForUpdate) return;
+    
+    const command = `/update_task_status id="${currentTaskForUpdate.id}" status="${status}" comment="${comment}"`;
+    await sendMessage(command);
+  };
+
+  // Handle proactive status update
+  const handleProactiveUpdateTrigger = () => {
+    const command = "/send_status_update";
+    sendMessage(command);
+  };
+
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Effect to connect/reconnect when selectedUserId changes
+  // Connect to SSE when component mounts or user changes
   useEffect(() => {
-    connectSSE(); // Connect on initial mount and when user changes
-
-    // Cleanup function to close connection when component unmounts or user changes
+    connectSSE();
     return () => {
-      if (eventSourceRef.current) {
-        console.log('Closing SSE connection due to component unmount or user change.');
-        eventSourceRef.current.close();
-        eventSourceRef.current = null;
-      }
+      if (eventSourceRef.current) eventSourceRef.current.close();
     };
-  }, [selectedUserId, connectSSE]); // Rerun only when user changes
+  }, [selectedUserId, connectSSE]);
 
-  // Explicit reconnect function for button
+  // Reconnect handler
   const handleReconnect = useCallback(() => {
-    toast({ title: 'Attempting to reconnect...', duration: 2000 });
+    toast({ title: 'Reconnecting...', duration: 2000 });
     connectSSE();
   }, [connectSSE, toast]);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900 text-white font-sans">
+    <div className="relative flex flex-col h-screen bg-gradient-to-br from-[#283048] to-[#859398] text-white font-sans overflow-hidden">
+      {/* <div className="absolute inset-0 bg-white/10 backdrop-blur-lg pointer-events-none z-0" /> */}
       {/* Header */}
       <header className="flex items-center justify-between p-3 border-b border-gray-700 shadow-md">
         <div className="flex items-center space-x-3">
@@ -290,192 +407,231 @@ const SseChat: React.FC = () => {
           <div className="flex items-center text-xs text-gray-400">
             <span className={`h-2 w-2 rounded-full mr-1.5 ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
             {isConnected ? 'Connected' : 'Disconnected'}
-            {!isConnected && connectionError && ( // Show reconnect only if disconnected due to error
+            {!isConnected && connectionError && (
               <Button variant="ghost" size="sm" className="ml-2 h-6 px-2 text-xs" onClick={handleReconnect}>
-                <RefreshCw className="h-3 w-3 mr-1" /> Reconnect
+                <RefreshCw className="h-3 w-3 mr-1"/> Reconnect
               </Button>
             )}
           </div>
         </div>
         <div className="flex items-center space-x-3">
-          <Select value={selectedUserId} onValueChange={(value) => setSelectedUserId(value)}>
-            <SelectTrigger className="w-[190px] h-8 text-xs bg-gray-800 border-gray-600 hover:border-gray-500">
-                <SelectValue placeholder="Select user" />
+          <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+            <SelectTrigger className="w-[190px] h-8 text-xs bg-gray-800 border-gray-600">
+              <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-gray-800 border-gray-700 text-white">
-              {userOptions.map(option => (
-                <SelectItem key={option.id} value={option.id} className="text-xs hover:bg-gray-700 focus:bg-gray-700">
-                  {option.name} <span className="text-gray-400 ml-1">({option.role})</span>
+              {userOptions.map(o => (
+                <SelectItem key={o.id} value={o.id} className="text-xs">
+                  {o.name} <span className="text-gray-400 ml-1">({o.role})</span>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {/* Optional: Link to switch to WebSocket version if you have one */}
-          {/* <Link to="/chat-ws" className="text-xs text-blue-400 hover:text-blue-300">Use WebSocket</Link> */}
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 px-2 text-xs bg-gray-800 border-gray-600 hover:bg-gray-700"
+            onClick={handleManualTaskFormOpen}
+            title="Create New Task"
+          >
+            <Plus className="h-3 w-3 mr-1"/> New Task
+          </Button>
+          {selectedUserId !== 'user_manager' && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-2 text-xs bg-gray-800 border-gray-600 hover:bg-gray-700"
+              onClick={handleProactiveUpdateTrigger}
+              title="Send Status Update"
+            >
+              <MessageSquarePlus className="h-3 w-3 mr-1"/> Status Update
+            </Button>
+          )}
         </div>
       </header>
 
       {/* Message Display Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {connectionError && !isConnected && ( // Show detailed error only when disconnected
-          <div className="p-3 mb-3 bg-red-900/60 border border-red-700 rounded-md text-red-100 text-xs">
-             <p className="font-semibold flex items-center mb-1"><AlertCircle className="h-4 w-4 mr-1.5" /> Connection Error</p>
-             <p>{connectionError}</p>
-             <Button variant="outline" size="sm" className="mt-2 h-6 px-2 text-xs bg-red-800 hover:bg-red-700 border-red-700" onClick={handleReconnect}>
-               <RefreshCw className="h-3 w-3 mr-1" /> Try Reconnect
-             </Button>
-          </div>
-        )}
-
-        {messages.length === 0 && !connectionError ? (
-          <div className="flex flex-col items-center justify-center h-full text-gray-500 text-sm">
-             <p>No messages yet.</p>
-          </div>
-        ) : (
-          messages.map((message) => (
-            <motion.div
-              key={message.id}
-              layout // Animate layout changes smoothly
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className={`p-3 rounded-lg max-w-[85%] w-fit text-sm shadow-sm ${ // Use w-fit for bubble size
-                message.sender === 'user'
-                  ? 'bg-blue-600 ml-auto'
-                  : message.sender === 'system'
-                  ? 'bg-yellow-800/70 border border-yellow-700/50 text-yellow-100 mx-auto text-xs' // System messages centered and styled
-                  : 'bg-gray-700 mr-auto' // AI messages align left
-              }`}
-            >
-              {/* Don't show header for system messages maybe */}
-              {message.sender !== 'system' && (
-                <div className="flex justify-between items-center mb-1 opacity-80">
-                  <span className="text-xs font-medium">
-                    {message.sender === 'user' ? 'You' : 'AI Assistant'}
-                  </span>
-                  <span className="text-xs ml-2">
-                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              )}
-              {/* --- CONDITIONAL RENDERING for Task Lists --- */}
-              {/* --- START: CONDITIONAL RENDERING (IMPROVED DESIGN) --- */}
-              {message.type === 'task_list' && message.tasks ? (
-                 <div className="mt-1">
-                   {/* Task List Title (optional, using message.content) */}
-                   {message.content && (
-                       <h4 className="font-semibold text-xs mb-2 flex items-center opacity-90">
-                          <ListChecks className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
-                          {message.content}
-                       </h4>
-                   )}
-                   {/* Task List Items */}
-                   <ul className="list-none space-y-2"> {/* Added space between items */}
-                     {message.tasks.map((task) => (
-                       <li key={task.id} className="p-2.5 bg-black/25 rounded-md border border-gray-600/50 shadow-sm"> {/* Added padding, bg, border */}
-                         {/* Task Name and Status Badge */}
-                         <div className="flex justify-between items-start mb-1">
-                           <span className="font-medium text-gray-100 break-words mr-2">{task.name}</span>
-                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                               task.status.toLowerCase() === 'pending' ? 'bg-yellow-700/70 text-yellow-100' :
-                               task.status.toLowerCase() === 'in progress' ? 'bg-blue-700/70 text-blue-100' :
-                               task.status.toLowerCase() === 'completed' ? 'bg-green-700/70 text-green-100' :
-                               'bg-gray-500/70 text-gray-100' // Default/Other status
-                           }`}>
-                             {task.status}
-                           </span>
-                         </div>
-                         {/* Task Metadata */}
-                         <div className="text-xs text-gray-400 space-x-2"> {/* Use horizontal space */}
-                            <span>ID: {task.id}</span>
-                            <span>|</span>
-                            <span>Assignee: {task.assignee}</span>
-                            {task.dueDate && (
-                                <>
-                                  <span>|</span>
-                                  <span>Due: {task.dueDate}</span>
-                                </>
-                            )}
-                         </div>
-                       </li>
-                     ))}
-                   </ul>
-                 </div>
-               ) : (
-                 // Render normal text content
-                 <p className="whitespace-pre-wrap break-words">{message.content}</p>
-               )}
-              {/* --- END: CONDITIONAL RENDERING --- */}
-            </motion.div>
-          ))
-        )}
-
-        {/* AI Typing Indicator */}
-        {isAiSpeaking && (
-           <motion.div
-             key="typing"
-             initial={{ opacity: 0, y: 10 }}
-             animate={{ opacity: 1, y: 0 }}
-             transition={{ duration: 0.2 }}
-             className="p-3 rounded-lg bg-gray-700 max-w-[85%] w-fit text-sm shadow-sm mr-auto flex items-center" // Match AI bubble style
-           >
-            <div className="typing-indicator">
-              <span></span><span></span><span></span>
+        {connectionError && !isConnected && (
+          <div className="p-4 mb-4 bg-red-700/30 backdrop-blur-sm border border-red-500 rounded-lg text-red-100 text-sm shadow-lg flex flex-col gap-2 max-w-md mx-auto">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-400" />
+              <span className="font-semibold">Connection Error</span>
             </div>
-            <span className="ml-2 text-xs text-gray-400 italic">AI is typing...</span>
-           </motion.div>
+            <p className="ml-7 text-red-200">{connectionError}</p>
+            <Button
+              className="self-start px-4 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-full shadow-sm hover:from-red-600 hover:to-red-500 transition-all"
+              size="sm"
+              onClick={handleReconnect}
+            >
+              Retry
+            </Button>
+          </div>
         )}
-
-        {/* Scroll anchor */}
+        
+        <ChatMessageList messages={messages} scrollRef={messageEndRef} onTaskSelect={handleTaskStatusUpdateClick} />
+        
+        {isAiSpeaking && (
+          <motion.div
+            key="typing"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="p-3 rounded-lg bg-white/20 backdrop-blur-sm border border-white/30 text-white max-w-[85%] w-fit shadow-md mr-auto flex items-center"
+          >
+            <div className="typing-indicator flex space-x-1">
+              <span className="block w-1 h-1 bg-white/50 rounded-full animate-pulse"></span>
+              <span className="block w-1 h-1 bg-white/50 rounded-full animate-pulse delay-150"></span>
+              <span className="block w-1 h-1 bg-white/50 rounded-full animate-pulse delay-300"></span>
+            </div>
+            <span className="ml-2 text-white/70">AI is typing...</span>
+          </motion.div>
+        )}
+        
         <div ref={messageEndRef} />
       </div>
 
       {/* Input Area */}
       <div className="p-3 border-t border-gray-700 bg-gray-900">
-        <div className="flex items-end space-x-2 bg-gray-800 rounded-lg border border-gray-700 focus-within:border-blue-500 px-2 py-1.5">
+        {/* Global Suggested Replies */}
+        {currentSuggestedReplies.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-2 animate-in fade-in duration-300">
+            <p className="text-xs text-gray-400 w-full mb-1">Quick Replies:</p>
+            {currentSuggestedReplies.map((reply, index) => (
+              <Button
+                key={index}
+                variant="outline"
+                size="sm"
+                onClick={() => handleSuggestionClick(reply)}
+                className="h-7 px-2.5 text-xs bg-gray-700 hover:bg-gray-600 border-gray-600 text-gray-100 transition-all"
+              >
+                {reply}
+              </Button>
+            ))}
+          </div>
+        )}
+        
+        {/* Suggestions Row */}
+        <div className="flex flex-wrap gap-2 px-4 pt-2 pb-1">
+          {[
+            "Show my tasks",
+            "Show all tasks",
+            "Show John's tasks",
+            "List completed tasks",
+            "Show tasks due today"
+          ].map((s, i) => (
+            <Button
+              key={i}
+              variant="outline"
+              size="sm"
+              className="text-xs border-gray-600 bg-gray-900 hover:bg-gray-700"
+              onClick={() => setNewMessage(s)}
+            >
+              {s}
+            </Button>
+          ))}
+        </div>
+
+        {/* Input Area */}
+        <div className="flex items-end gap-2 p-3 border-t border-gray-700 bg-gray-800">
           <Textarea
+            className="flex-1 resize-none rounded-lg bg-gray-900 border border-gray-700 text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            rows={2}
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => {
+            onChange={e => setNewMessage(e.target.value)}
+            onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Prevent newline on Enter
-                sendMessage();
+                e.preventDefault();
+                handleSendClick();
               }
             }}
-            placeholder={`Chat as ${userOptions.find(u => u.id === selectedUserId)?.name || 'User'}...`}
-            className="flex-1 bg-transparent border-none focus:ring-0 resize-none text-sm placeholder-gray-500 px-1 py-0 no-scrollbar"
-            rows={1} // Start with 1 row, auto-expand
-            // Add logic for auto-resizing textarea if needed
+            placeholder="Type your message..."
           />
           <Button
-            size="sm"
-            onClick={sendMessage}
-            className="bg-blue-600 hover:bg-blue-700 text-white h-8 w-8 p-0" // Smaller button
-            disabled={!isConnected || !newMessage.trim()}
-            title="Send Message"
+            className="h-10 w-10 flex items-center justify-center rounded-full bg-gradient-to-r from-[#283048] to-[#859398] shadow-lg hover:from-[#859398] hover:to-[#283048] transition-all"
+            onClick={handleSendClick}
+            disabled={!newMessage.trim() || !isConnected}
           >
-            <ArrowUpIcon className="h-4 w-4" />
+            <ArrowUpIcon className="h-5 w-5" />
           </Button>
         </div>
+        
+        {/* Status Update Initiator (only shown for employees) */}
+        {/* {selectedUserId !== 'user_manager' && (
+          <Button
+            size="sm"
+            variant="secondary"
+            className="mt-2 text-xs"
+            onClick={handleProactiveUpdateTrigger}
+          >
+            Send Status Update
+          </Button>
+        )} */}
       </div>
 
-      {/* Styles for Typing Indicator */}
+      {/* Task Creation Form Modal */}
+      {isTaskFormOpen && (
+        <TaskCreationForm
+          isOpen={isTaskFormOpen}
+          onClose={() => setIsTaskFormOpen(false)}
+          onSubmit={handleTaskFormSubmit}
+          initialData={taskFormInitialData}
+          userOptions={userOptions}
+        />
+      )}
+
+      {/* Task Status Update Modal */}
+      {isStatusUpdateOpen && currentTaskForUpdate && (
+        <TaskStatusUpdate
+          isOpen={isStatusUpdateOpen}
+          onClose={() => setIsStatusUpdateOpen(false)}
+          onSubmit={handleStatusUpdateSubmit}
+          taskId={currentTaskForUpdate.id}
+          taskName={currentTaskForUpdate.name}
+          currentStatus={currentTaskForUpdate.status}
+        />
+      )}
+
+      {/* Typing Indicator Style */}
       <style jsx>{`
-        .typing-indicator { display: flex; align-items: center; gap: 4px; }
+        .typing-indicator {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
         .typing-indicator span {
-          width: 6px; height: 6px; background-color: rgba(209, 213, 219, 0.7); /* gray-300 */
-          border-radius: 50%; animation: bounce 1.2s infinite ease-in-out;
+          width: 6px;
+          height: 6px;
+          background-color: rgba(209, 213, 219, .7);
+          border-radius: 50%;
+          animation: bounce 1.2s infinite ease-in-out;
         }
-        .typing-indicator span:nth-child(1) { animation-delay: 0s; }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.15s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.3s; }
+        .typing-indicator span:nth-child(1) {
+          animation-delay: 0s;
+        }
+        .typing-indicator span:nth-child(2) {
+          animation-delay: .15s;
+        }
+        .typing-indicator span:nth-child(3) {
+          animation-delay: .3s;
+        }
         @keyframes bounce {
-          0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-          40% { transform: scale(1.0); opacity: 1; }
+          0%, 80%, 100% {
+            transform: scale(.8);
+            opacity: .5;
+          }
+          40% {
+            transform: scale(1);
+            opacity: 1;
+          }
         }
-        /* Simple scrollbar styling for Textarea */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
       `}</style>
     </div>
   );

@@ -23,6 +23,7 @@ import { Task, Column } from "@/types/task";
 import TaskCard from "@/components/TaskCard";
 import BoardView from "@/components/BoardView";
 import TimelineView from "@/components/TimelineView";
+import SseChat from "./SseChat";
 
 // Types
 // export interface Task {
@@ -561,7 +562,7 @@ const ProjectBoard: React.FC = () => {
             />
           )}
 
-          <Drawer open={isChatOpen} onOpenChange={setIsChatOpen}>
+          <Drawer direction="right" open={isChatOpen} onOpenChange={setIsChatOpen}>
             <DrawerContent className="backdrop-blur-xl bg-gradient-to-b from-black/40 to-black/60 text-slate-100 border-t border-white/10">
               <DrawerHeader className="border-b border-white/10 pb-4">
                 <DrawerTitle className="flex items-center gap-3">
@@ -604,7 +605,7 @@ const ProjectBoard: React.FC = () => {
                   )}
                 </DrawerTitle>
               </DrawerHeader>
-              <div className="px-4 py-4 flex flex-col h-[calc(100vh-100px)]">
+              {/* <div className="px-4 py-4 flex flex-col h-[calc(100vh-100px)]">
                 <div className="flex-1 overflow-y-auto space-y-4 mb-4">
                   <AnimatePresence>
                     {chatMessages.map((message) => (
@@ -765,7 +766,8 @@ const ProjectBoard: React.FC = () => {
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
+              </div> */}
+              <SseChat/>
             </DrawerContent>
           </Drawer>
         </div>

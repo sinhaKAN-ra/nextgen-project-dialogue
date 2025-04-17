@@ -93,13 +93,13 @@ const Workflow: React.FC = () => {
   };
 
   return (
-    <section id="workflow" className="py-24 bg-gradient-to-b from-slate-900 to-blue-900 relative">
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none"></div>
+    <section id="workflow" className="py-24 bg-gradient-to-b from-[#2E3192] to-[#1BFFFF] relative overflow-hidden">
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-lg pointer-events-none"></div>
       
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
           <div className="inline-block reveal">
-            <span className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+            <span className="px-3 py-1 text-xs font-medium bg-white/50 text-[#7f5fff] rounded-full backdrop-blur-sm">
               Workflow
             </span>
           </div>
@@ -133,7 +133,7 @@ const Workflow: React.FC = () => {
                 
                 <div className="w-full md:w-1/2 flex justify-center">
                   <div className="relative p-2 bg-white rounded-xl shadow-lg hover-lift overflow-hidden max-w-sm w-full">
-                    <div className="aspect-[4/3] w-full bg-gradient-to-br from-blue-500/90 to-blue-700 p-8 flex items-center justify-center">
+                    <div className="aspect-[4/3] w-full bg-gradient-to-br from-[#2E3192]/90 to-[#1BFFFF]/80 p-8 flex items-center justify-center">
                       <img 
                         src={step.imageUrl} 
                         alt={step.title} 
@@ -171,7 +171,7 @@ const Workflow: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-2 bg-gradient-to-r from-[#2E3192] to-[#1BFFFF] text-white rounded-full font-medium shadow-lg hover:from-[#1BFFFF] hover:to-[#2E3192] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? "Joining..." : "Join Waitlist"}
                   </button>

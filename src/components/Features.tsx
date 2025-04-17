@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { motion } from 'framer-motion';
 
 const featuresData = [
   {
@@ -107,21 +108,25 @@ const Features: React.FC = () => {
   }, []);
 
   return (
-    <section id="features" className="py-24 bg-gradient-to-b from-slate-900 to-blue-900 relative">
-      <div className="absolute inset-0 bg-grid-pattern opacity-[0.02] pointer-events-none"></div>
+    <motion.section id="features" initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.8 }} className="py-28 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-2 bg-gradient-to-r from-[#283048] to-[#859398] rounded-full opacity-80 animate-gradient-x mb-8" />
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-lg pointer-events-none"></div>
       
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+        <div className="text-center max-w-3xl mx-auto mb-16 space-y-6">
           <div className="inline-block reveal">
             <span className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
               The Problem
             </span>
           </div>
-          <h2 className="text-white/90 text-3xl md:text-4xl font-bold tracking-tight reveal">
-            Teams Waste 40% of Time on Busy Work
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-2xl reveal">
+            Features That Set Us Apart
           </h2>
-          <p className="text-lg text-white/70 reveal">
-            Status meetings, report writing, and task management eat up your most productive hours. Our AI eliminates the overhead so you can focus on real work.
+          <p className="text-lg text-white/90 reveal max-w-2xl mx-auto">
+            Teams waste 40% of time on busy work. Status meetings, report writing, and task management eat up your most productive hours.
+          </p>
+          <p className="text-lg text-white/90 reveal max-w-2xl mx-auto">
+            Discover how our AI-driven platform saves you time, automates your workflow, and keeps your team focused.
           </p>
         </div>
 
@@ -129,14 +134,14 @@ const Features: React.FC = () => {
           {featuresData.map((feature) => (
             <div 
               key={feature.id} 
-              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-300 reveal"
+              className="bg-white/20 backdrop-blur-lg border border-white/20 rounded-2xl p-8 shadow-2xl hover:shadow-2xl transition-all duration-300 reveal flex flex-col items-center text-center"
             >
-              <div className="w-12 h-12 rounded-md bg-white/50 flex items-center justify-center text-primary mb-4">
+              <div className="w-12 h-12 rounded-md bg-white/90 backdrop-blur-sm flex items-center justify-center text-[#283048] mb-4">
                 {feature.icon}
               </div>
               <h3 className="text-xl text-white font-semibold mb-2">{feature.title}</h3>
-              <p className="text-white/70 text-muted-foreground mb-4">{feature.description}</p>
-              <div className="bg-white/20 rounded-full px-3 py-1 inline-block text-xs font-medium">
+              <p className=" text-white/80 mb-4">{feature.description}</p>
+              <div className="bg-white/60 rounded-full px-3 py-1 inline-block text-xs font-medium">
                 {feature.benefit}
               </div>
             </div>
@@ -144,7 +149,7 @@ const Features: React.FC = () => {
         </div>
         
         {/* ROI Calculator Section */}
-        <div className="mt-16 bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 max-w-2xl mx-auto reveal">
+        <div className="mt-16 bg-white/20 backdrop-blur-lg rounded-xl p-6 border border-white/20 max-w-2xl mx-auto reveal">
           <h3 className="text-2xl font-bold text-white mb-4 text-center">Calculate Your Time Savings</h3>
           <div className="space-y-6">
             <div className="grid grid-cols-3 gap-4 text-center">
@@ -156,7 +161,7 @@ const Features: React.FC = () => {
                 <p className="text-white/70 text-sm mb-1">Hours Saved/Week</p>
                 <p className="text-white text-xl font-bold">× 8</p>
               </div>
-              <div className="p-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg">
+              <div className="p-4 bg-gradient-to-r from-[#283048] to-[#859398] rounded-lg">
                 <p className="text-white/80 text-sm mb-1">Monthly Value</p>
                 <p className="text-white text-xl font-bold">160 hrs</p>
               </div>
@@ -167,7 +172,7 @@ const Features: React.FC = () => {
           </div>
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 

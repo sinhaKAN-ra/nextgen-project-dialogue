@@ -68,17 +68,17 @@ const Header: React.FC = () => {
             >
               Demo Board
             </Link>
-            <Link
+            {/* <Link
               to="/chat"
               className="text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
               Chat Demo (WS)
-            </Link>
+            </Link> */}
             <Link
               to="/sse-chat"
               className="text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
-              Chat Demo (SSE)
+              Demo (SSE)
             </Link>
           </nav>
 

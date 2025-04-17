@@ -32,3 +32,21 @@ export async function addToNewsletter(data: any) {
     console.log('Wishlist item added successfully');
   }
 }
+
+// lib/utils.ts - Add this function if you don't already have it
+
+import { toast } from "@/components/ui/use-toast";
+
+// Helper function to simplify sending toast notifications
+export const sendToast = (
+  message: string, 
+  type: 'default' | 'success' | 'error' | 'warning' = 'default', 
+  duration: number = 3000
+) => {
+  toast({
+    title: type === 'error' ? 'Error' : type === 'success' ? 'Success' : 'Notification',
+    description: message,
+    variant: type === 'error' ? 'destructive' : type === 'warning' ? 'destructive' : 'default',
+    duration: duration,
+  });
+};

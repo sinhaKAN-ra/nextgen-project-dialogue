@@ -229,75 +229,77 @@ const Chat: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 h-screen flex flex-col">
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            <span>AI Chat Demo</span>
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              <Select value={selectedUserId} onValueChange={handleUserChange}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select User" />
-                </SelectTrigger>
-                <SelectContent>
-                  {userOptions.map(user => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className={`h-3 w-3 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`} />
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>
-            This demo showcases the AI chat functionality. Select a user from the dropdown to switch between roles.
-          </p>
-          
-          {connectionError && (
-            <Alert variant="destructive" className="mt-4">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {connectionError}
-              </AlertDescription>
-            </Alert>
+    <section className="min-h-screen py-12 bg-gradient-to-br from-[#283048] to-[#859398] relative overflow-hidden">
+      <div className="absolute inset-0 bg-white/10 backdrop-blur-lg pointer-events-none"></div>
+      <div className="container mx-auto p-4 h-screen flex flex-col relative z-10">
+        <Card className="bg-white/20 backdrop-blur-lg border-white/20 text-white shadow-lg mb-4">
+          <CardHeader>
+            <CardTitle className="flex justify-between items-center">
+              <span>AI Chat Demo</span>
+              <div className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                <Select value={selectedUserId} onValueChange={handleUserChange}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select User" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {userOptions.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <div className={`h-3 w-3 rounded-full ${isConnected ? 'bg-green-500' : isConnecting ? 'bg-yellow-500' : 'bg-red-500'}`} />
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>
+              This demo showcases the AI chat functionality. Select a user from the dropdown to switch between roles.
+            </p>
+            
+            {connectionError && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {connectionError}
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+          {!isConnected && (
+            <CardFooter>
+              <Button 
+                onClick={connectWebSocket} 
+                disabled={isConnecting}
+                className="px-6 py-2 bg-gradient-to-r from-[#283048] to-[#859398] text-white rounded-full shadow-lg hover:from-[#859398] hover:to-[#283048] transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${isConnecting ? 'animate-spin' : ''}`} />
+                {isConnecting ? 'Connecting...' : 'Reconnect'}
+              </Button>
+            </CardFooter>
           )}
-        </CardContent>
-        {!isConnected && (
-          <CardFooter>
-            <Button 
-              variant="outline" 
-              onClick={connectWebSocket} 
-              disabled={isConnecting}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className={`h-4 w-4 ${isConnecting ? 'animate-spin' : ''}`} />
-              {isConnecting ? 'Connecting...' : 'Reconnect'}
-            </Button>
-          </CardFooter>
+        </Card>
+
+        <ChatDrawer
+          isOpen={isDrawerOpen}
+          onClose={() => setIsDrawerOpen(false)}
+          messages={messages}
+          onSendMessage={sendMessage}
+          isAiSpeaking={isAiSpeaking}
+        />
+
+        {!isDrawerOpen && (
+          <Button 
+            className="fixed bottom-4 right-4 bg-gradient-to-r from-[#283048] to-[#859398] text-white rounded-full shadow-lg p-3 hover:from-[#859398] hover:to-[#283048] transition-all"
+            onClick={() => setIsDrawerOpen(true)}
+          >
+            Open Chat
+          </Button>
         )}
-      </Card>
-
-      <ChatDrawer
-        isOpen={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        messages={messages}
-        onSendMessage={sendMessage}
-        isAiSpeaking={isAiSpeaking}
-      />
-
-      {!isDrawerOpen && (
-        <Button 
-          className="fixed bottom-4 right-4"
-          onClick={() => setIsDrawerOpen(true)}
-        >
-          Open Chat
-        </Button>
-      )}
-    </div>
+      </div>
+    </section>
   );
 };
 

@@ -72,16 +72,17 @@ const Hero: React.FC = () => {
                   Limited Access
                 </span>
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter">
-                No More Reports.
-                <br />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-blue-400">
+              <h1 className="text-5xl md:text-6xl lg:text-6xl font-extrabold tracking-tighter text-white drop-shadow-2xl mb-6">
+                No More Reports.<br />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#1BFFFF] via-[#2E3192] to-[#1BFFFF] animate-gradient-x">
                   No More Meetings.
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl lg:text-3xl text-white/70 max-w-[600px]">
-                AI that understands your project, creates tasks, and writes reports so you don't have to.
+              <p className="mt-4 mb-8 text-lg md:text-2xl text-white/90 font-medium max-w-xl mx-auto drop-shadow">
+                AI-powered project management that eliminates busywork. Focus on what matters most.
               </p>
+              
+            
             </motion.div>
             
             <motion.div 
@@ -107,14 +108,14 @@ const Hero: React.FC = () => {
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowWaitlist(true)}
-                className="px-8 py-3 text-base font-medium text-white bg-primary rounded-md hover:bg-primary/90 transition-all hover:shadow-lg focus-ring">
+                className="inline-block px-8 py-4 rounded-full font-semibold text-lg shadow-xl bg-gradient-to-r from-[#2E3192] to-[#1BFFFF] hover:from-[#1BFFFF] hover:to-[#2E3192] text-white transition-all duration-200 ring-2 ring-white/30 ring-offset-2 ring-offset-[#2E3192]">
                 Skip the Reports Queue
               </motion.button>
               <motion.button 
                 whileHover={{ scale: 1.05 }} 
                 whileTap={{ scale: 0.95 }}
                 onClick={() => navigation("/project-board")}
-                className="px-8 py-3 text-base font-medium text-primary bg-transparent border border-primary rounded-md hover:bg-primary/5 transition-all focus-ring">
+                className="inline-block px-8 py-3 text-base font-medium text-white bg-white/30 border border-white/50 rounded-full hover:bg-white/40 transition-all focus-ring ">
                 See AI in Action
               </motion.button>
             </motion.div>
