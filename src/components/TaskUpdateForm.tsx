@@ -25,7 +25,8 @@ const TaskStatusUpdate: React.FC<TaskStatusUpdateProps> = ({
 }) => {
   const [status, setStatus] = useState(currentStatus);
   const [comment, setComment] = useState('');
-  
+  const [isPolishing, setIsPolishing] = useState(false);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!status) {
@@ -33,6 +34,28 @@ const TaskStatusUpdate: React.FC<TaskStatusUpdateProps> = ({
       return;
     }
     onSubmit({ status, comment });
+  };
+
+  const handlePolish = async () => {
+    if (!comment.trim()) return;
+    try {
+      setIsPolishing(true);
+      const res = await fetch('http://localhost:8000/rephrase', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment, task_name: taskName })
+      });
+      const data = await res.json();
+      if (data.formatted) {
+        setComment(data.formatted);
+        sendToast('Comment polished', 'success');
+      } else {
+        sendToast('Failed to polish comment', 'error');
+      }
+    } catch (e) {
+      sendToast('Error polishing comment', 'error');
+    } finally {
+      setIsPolishing(false);
+    }
   };
 
   return (
@@ -73,6 +96,15 @@ const TaskStatusUpdate: React.FC<TaskStatusUpdateProps> = ({
               className="bg-gray-700 border-gray-600 text-white resize-none"
               rows={3}
             />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePolish}
+              disabled={!comment.trim() || isPolishing}
+              className="mt-2 bg-gray-700 border-gray-600 text-white hover:bg-gray-600"
+            >
+              {isPolishing ? 'Polishing...' : 'Polish Comment'}
+            </Button>
           </div>
 
           <DialogFooter className="pt-2">

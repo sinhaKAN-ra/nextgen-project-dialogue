@@ -30,10 +30,10 @@ export type Message = {
   sender: 'user' | 'ai' | 'system'; 
   timestamp: Date; 
   content?: string;
-  type?: 'text' | 'task_list' | 'task_update' | 'task_history' | 'action_request' | 'connection';
+  type?: 'text' | 'task_list' | 'task_update' | 'task_history' | 'action_request' | 'connection' | 'project_plan_created' | 'task_added_to_plan' | 'task_edited_in_plan' | 'project_plan_finalized';
   tasks?: TaskDetail[];
   task?: TaskDetail; // Single task for updates
-  history?: { ts: string; status: string; by?: string; comment?: string }[];
+  history?: { ts: Date; status: string; by?: string; comment?: string }[];
   suggested_replies?: string[];
   action?: string; 
   prefill?: Partial<TaskFormData>;
@@ -149,13 +149,24 @@ const SseChat: React.FC = () => {
             let msgTask = data.task || undefined;
 
             if (msgType === 'task_list' && Array.isArray(msgTasks)) {
+              // Map backend fields (due_date -> dueDate, assignee_name -> assignee)
+              const mappedTasks = msgTasks.map((t: any) => ({
+                id: t.id,
+                name: t.name,
+                assignee_name: t.assignee_name,
+                assignee: t.assignee_name,
+                status: t.status,
+                dueDate: t.due_date,
+                priority: t.priority,
+                description: t.description
+              }));
               messageToAdd = {
                 id: messageId,
                 content: contentStr.split('\n')[0],
                 sender: data.sender || 'ai',
                 timestamp: messageTimestamp,
                 type: 'task_list',
-                tasks: msgTasks
+                tasks: mappedTasks
               };
             } else if (msgType === 'task_update' && msgTask) {
               messageToAdd = {
@@ -167,13 +178,52 @@ const SseChat: React.FC = () => {
                 task: msgTask
               };
             } else if (msgType === 'task_history' && Array.isArray(data.history)) {
+              // Format history timestamps to Date objects and display comments
+              const formattedHistory = data.history.map((h: any) => ({
+                ts: new Date(h.ts),
+                status: h.status,
+                by: h.by,
+                comment: h.comment
+              }));
               messageToAdd = {
                 id: messageId,
                 sender: data.sender || 'ai',
                 timestamp: messageTimestamp,
                 type: 'task_history',
                 task: data.task || undefined,
-                history: data.history
+                history: formattedHistory
+              };
+            } else if (msgType === 'project_plan_created') {
+              messageToAdd = {
+                id: messageId,
+                content: contentStr,
+                sender: data.sender || 'ai',
+                timestamp: messageTimestamp,
+                type: 'project_plan_created'
+              };
+            } else if (msgType === 'task_added_to_plan') {
+              messageToAdd = {
+                id: messageId,
+                content: contentStr,
+                sender: data.sender || 'ai',
+                timestamp: messageTimestamp,
+                type: 'task_added_to_plan'
+              };
+            } else if (msgType === 'task_edited_in_plan') {
+              messageToAdd = {
+                id: messageId,
+                content: contentStr,
+                sender: data.sender || 'ai',
+                timestamp: messageTimestamp,
+                type: 'task_edited_in_plan'
+              };
+            } else if (msgType === 'project_plan_finalized') {
+              messageToAdd = {
+                id: messageId,
+                content: contentStr,
+                sender: data.sender || 'ai',
+                timestamp: messageTimestamp,
+                type: 'project_plan_finalized'
               };
             } else {
               // Fallback: try to parse from content if type/tasks/task not present
@@ -362,6 +412,14 @@ const SseChat: React.FC = () => {
     setIsStatusUpdateOpen(true);
   };
 
+  // Handle request status click on task
+  const handleRequestTaskStatusClick = (task: TaskDetail) => {
+    const assignee = task.assignee_name || task.assignee || '';
+    const taskName = task.name;
+    const command = `ask ${assignee} for update on ${taskName}`;
+    sendMessage(command);
+  };
+
   // Handle status update submission
   const handleStatusUpdateSubmit = async ({ status, comment }: { status: string; comment: string }) => {
     setIsStatusUpdateOpen(false);
@@ -469,7 +527,12 @@ const SseChat: React.FC = () => {
           </div>
         )}
         
-        <ChatMessageList messages={messages} scrollRef={messageEndRef} onTaskSelect={handleTaskStatusUpdateClick} />
+        <ChatMessageList
+          messages={messages}
+          scrollRef={messageEndRef}
+          onTaskSelect={handleTaskStatusUpdateClick}
+          onRequestStatus={handleRequestTaskStatusClick}
+        />
         
         {isAiSpeaking && (
           <motion.div
@@ -514,11 +577,12 @@ const SseChat: React.FC = () => {
         {/* Suggestions Row */}
         <div className="flex flex-wrap gap-2 px-4 pt-2 pb-1">
           {[
+            "Create a new task",
             "Show my tasks",
-            "Show all tasks",
-            "Show John's tasks",
-            "List completed tasks",
-            "Show tasks due today"
+            "Show all task list",
+            "Update task status",
+            "Show task history",
+            "Request status update"
           ].map((s, i) => (
             <Button
               key={i}

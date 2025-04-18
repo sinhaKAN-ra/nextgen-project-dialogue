@@ -3,14 +3,14 @@ import ReactMarkdown from "react-markdown";
 import { TaskDetail } from "../chatUtils";
 import styles from "./ChatMessageItem.module.css";
 
-type MessageType = 'text' | 'task_list' | 'task_update' | 'action_request';
+type MessageType = 'text' | 'task_list' | 'task_update' | 'action_request' | 'project_plan_created' | 'task_added_to_plan' | 'task_edited_in_plan' | 'project_plan_finalized' | 'task_history';
 
 import type { Message } from "../SseChat";
 
 import { Zap } from "lucide-react";
 
-const ChatMessageItem: React.FC<Message & { message?: string; onTaskSelect?: (task: TaskDetail) => void } & React.HTMLAttributes<HTMLDivElement>> = (props) => {
-  const { sender, timestamp, content, type, tasks, task, suggested_replies, message, onTaskSelect } = props;
+const ChatMessageItem: React.FC<Message & { message?: string; onTaskSelect?: (task: TaskDetail) => void; onRequestStatus?: (task: TaskDetail) => void; history?: any[] } & React.HTMLAttributes<HTMLDivElement>> = (props) => {
+  const { sender, timestamp, content, type, tasks, task, suggested_replies, message, onTaskSelect, onRequestStatus, history } = props;
   const displayTasks = tasks || [];
   const displayContent = content || message || '';
   const formattedTime = timestamp instanceof Date ? timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : timestamp;
@@ -89,6 +89,14 @@ const ChatMessageItem: React.FC<Message & { message?: string; onTaskSelect?: (ta
                           Update Status
                         </button>
                       )}
+                      {onRequestStatus && (
+                        <button
+                          onClick={() => onRequestStatus(t)}
+                          className="mt-2 ml-2 px-2 py-1 text-xs text-white bg-gradient-to-br from-[#283048] to-[#859398] rounded-full shadow-sm hover:opacity-90"
+                        >
+                          Request Status
+                        </button>
+                      )}
                       <div className={styles["chat-task-divider"]} />
                     </div>
                   ))}
@@ -105,6 +113,44 @@ const ChatMessageItem: React.FC<Message & { message?: string; onTaskSelect?: (ta
               {task.dueDate && <div><strong>Due:</strong> {task.dueDate}</div>}
               {task.priority && <div><strong>Priority:</strong> {task.priority}</div>}
               {task.description && <div><strong>Description:</strong> {task.description}</div>}
+            </div>
+          ) : type === 'task_history' && history && task ? (
+            <div className={styles["chat-message-task-history"]}>
+              <div>
+                <span role="img" aria-label="History">📜</span> <b>History for task:</b> {task.name}
+              </div>
+              {history.length > 0 ? (
+                <ul>
+                  {history.map((h, i) => (
+                    <li key={i} className={styles["chat-task-list-li"]}>
+                      <div>
+                        <span className="text-xs text-slate-400">
+                          {h.ts instanceof Date ? h.ts.toLocaleString() : new Date(h.ts).toLocaleString()}
+                        </span> - <strong>{h.status}</strong>{h.by ? ` by ${h.by}` : ''}
+                      </div>
+                      {h.comment && <div className="ml-4 text-sm">{h.comment}</div>}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className={styles["chat-task-list-empty"]}>No history available.</div>
+              )}
+            </div>
+          ) : type === 'project_plan_created' ? (
+            <div className={styles["chat-message-notification"]}>
+              <span role="img" aria-label="Plan Created">📦</span> <b>Project Plan Created:</b> {displayContent}
+            </div>
+          ) : type === 'task_added_to_plan' ? (
+            <div className={styles["chat-message-notification"]}>
+              <span role="img" aria-label="Task Added">🆕</span> {displayContent}
+            </div>
+          ) : type === 'task_edited_in_plan' ? (
+            <div className={styles["chat-message-notification"]}>
+              <span role="img" aria-label="Task Edited">✏️</span> {displayContent}
+            </div>
+          ) : type === 'project_plan_finalized' ? (
+            <div className={styles["chat-message-notification"]}>
+              <span role="img" aria-label="Plan Finalized">✅</span> <b>Project Plan Finalized:</b> {displayContent}
             </div>
           ) : (
             <ReactMarkdown>{displayContent}</ReactMarkdown>

@@ -4,9 +4,9 @@ export interface TaskDetail {
   id: string;
   name: string;
   assignee_name?: string;
-  assignee: string;
+  assignee?: string;
   status: string;
-  dueDate: string | null;
+  dueDate?: string | null;
   priority?: 'low' | 'medium' | 'high';
   description?: string;
 }
