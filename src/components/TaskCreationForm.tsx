@@ -82,6 +82,11 @@ const TaskCreationForm: React.FC<TaskCreationFormProps> = ({
               className="bg-gray-700/90 border-gray-600 text-white"
               required
             />
+            {initialData.name === '' && (
+              <p className="text-xs text-gray-400 mt-1">
+                Couldn't detect the task name automatically. Please enter it.
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">

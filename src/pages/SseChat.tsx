@@ -5,13 +5,15 @@ import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowUpIcon, RefreshCw, AlertCircle, ListChecks, Plus, MessageSquarePlus, ClipboardCheck } from 'lucide-react';
+import { ArrowUpIcon, RefreshCw, AlertCircle, ListChecks, Plus, MessageSquarePlus, ClipboardCheck, BookOpen, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import TaskCreationForm, { TaskFormData } from '../components/TaskCreationForm';
 import TaskStatusUpdate from '../components/TaskUpdateForm';
 import { format } from 'date-fns';
 import { parseContent, parseTaskList, parseTaskUpdate } from './chatUtils';
 import ChatMessageList from './components/ChatMessageList';
+import ActionItemExtractor from '../components/ActionItemExtractor';
+import SummaryPanel from '../components/SummaryPanel';
 
 // Interfaces
 interface TaskDetail { 
@@ -51,6 +53,9 @@ type UserOption = {
 };
 
 const SseChat: React.FC = () => {
+  // ...existing state
+  const [isActionExtractorOpen, setIsActionExtractorOpen] = useState(false);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isConnected, setIsConnected] = useState(false);
@@ -62,6 +67,7 @@ const SseChat: React.FC = () => {
   const [currentSuggestedReplies, setCurrentSuggestedReplies] = useState<string[]>([]);
   const [isStatusUpdateOpen, setIsStatusUpdateOpen] = useState(false);
   const [currentTaskForUpdate, setCurrentTaskForUpdate] = useState<TaskDetail | null>(null);
+  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
   const { toast } = useToast();
   const messageEndRef = useRef<HTMLDivElement>(null);
@@ -124,7 +130,9 @@ const SseChat: React.FC = () => {
           // Handle ACTION messages
           else if (data.action === 'show_task_form') {
             console.log("Received action: show_task_form", data.prefill);
-            setTaskFormInitialData(data.prefill || {});
+            // Map prefill fields to TaskFormData shape, defaulting to empty strings
+            const { task_name = "", assignee = "" } = data.prefill || {};
+            setTaskFormInitialData({ name: task_name, assignee });
             setTimeout(() => setIsTaskFormOpen(true), 100); // Open form
             
             // Add the AI message that triggered the form (optional)
@@ -138,6 +146,41 @@ const SseChat: React.FC = () => {
               };
             } else {
               setIsAiSpeaking(false); // No message content, just action
+            }
+          }
+          else if (data.action === 'show_status_update_form') {
+            console.log("Received action: show_status_update_form", data.prefill);
+            const prefill = data.prefill || {};
+            let taskData: any;
+            if (prefill.task && typeof prefill.task === 'object') {
+              taskData = {
+                id: prefill.task.id,
+                name: prefill.task.name,
+                assignee_name: prefill.task.assignee_name,
+                status: prefill.task.status,
+                dueDate: prefill.task.due_date,
+                priority: prefill.task.priority,
+                description: prefill.task.description
+              };
+            } else {
+              taskData = {
+                id: prefill.task_identifier || prefill.task_id || '',
+                name: prefill.task_name || ''
+              };
+            }
+            setCurrentTaskForUpdate(taskData);
+            // setTimeout(() => setIsStatusUpdateOpen(true), 100);
+            if (data.content) {
+              messageToAdd = {
+                id: messageId,
+                content: parseContent(data.content),
+                sender: data.sender || 'ai',
+                timestamp: messageTimestamp,
+                type: 'action_request',
+                task: taskData
+              };
+            } else {
+              setIsAiSpeaking(false);
             }
           }
           // Handle CONTENT messages
@@ -466,7 +509,12 @@ const SseChat: React.FC = () => {
             <span className={`h-2 w-2 rounded-full mr-1.5 ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></span>
             {isConnected ? 'Connected' : 'Disconnected'}
             {!isConnected && connectionError && (
-              <Button variant="ghost" size="sm" className="ml-2 h-6 px-2 text-xs" onClick={handleReconnect}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="ml-2 h-6 px-2 text-xs"
+                onClick={handleReconnect}
+              >
                 <RefreshCw className="h-3 w-3 mr-1"/> Reconnect
               </Button>
             )}
@@ -486,29 +534,19 @@ const SseChat: React.FC = () => {
             </SelectContent>
           </Select>
           <Button
-            variant="outline"
-            size="sm"
-            className="h-8 px-2 text-xs bg-gray-800 border-gray-600 hover:bg-gray-700"
-            onClick={handleManualTaskFormOpen}
-            title="Create New Task"
-          >
-            <Plus className="h-3 w-3 mr-1"/> New Task
-          </Button>
-          {selectedUserId !== 'user_manager' && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 px-2 text-xs bg-gray-800 border-gray-600 hover:bg-gray-700"
-              onClick={handleProactiveUpdateTrigger}
-              title="Send Status Update"
-            >
-              <MessageSquarePlus className="h-3 w-3 mr-1"/> Status Update
-            </Button>
-          )}
+          variant={isSummaryOpen ? "secondary" : "outline"}
+          size="sm"
+          className="flex items-center gap-1 text-black"
+          onClick={() => setIsSummaryOpen((v) => !v)}
+          aria-label={isSummaryOpen ? "Hide Summary" : "Show Summary"}
+        >
+          <BookOpen className="w-4 h-4" />
+          {isSummaryOpen ? "Hide Summary" : "Show Summary"}
+        </Button>
         </div>
+        
       </header>
-
-      {/* Message Display Area */}
+        
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {connectionError && !isConnected && (
           <div className="p-4 mb-4 bg-red-700/30 backdrop-blur-sm border border-red-500 rounded-lg text-red-100 text-sm shadow-lg flex flex-col gap-2 max-w-md mx-auto">
@@ -525,6 +563,10 @@ const SseChat: React.FC = () => {
               Retry
             </Button>
           </div>
+        )}
+        
+        {isSummaryOpen && (
+          <SummaryPanel userId={selectedUserId} />
         )}
         
         <ChatMessageList
@@ -554,83 +596,67 @@ const SseChat: React.FC = () => {
         <div ref={messageEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div className="p-3 border-t border-gray-700 bg-gray-900">
-        {/* Global Suggested Replies */}
-        {currentSuggestedReplies.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-2 animate-in fade-in duration-300">
-            <p className="text-xs text-gray-400 w-full mb-1">Quick Replies:</p>
-            {currentSuggestedReplies.map((reply, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                size="sm"
-                onClick={() => handleSuggestionClick(reply)}
-                className="h-7 px-2.5 text-xs bg-gray-700 hover:bg-gray-600 border-gray-600 text-gray-100 transition-all"
-              >
-                {reply}
-              </Button>
-            ))}
-          </div>
-        )}
-        
-        {/* Suggestions Row */}
-        <div className="flex flex-wrap gap-2 px-4 pt-2 pb-1">
+      {/* --- Unified Chat Composer Bar --- */}
+      <div className="sticky bottom-0 left-0 right-0 w-full bg-white/90 shadow-xl border-t z-30 px-4 py-3 flex flex-col gap-2">
+        {/* Quick Actions (always visible) */}
+        <div className="flex gap-2 overflow-x-auto pb-1" role="list" aria-label="Quick Actions">
           {[
             "Create a new task",
             "Show my tasks",
             "Show all task list",
             "Update task status",
             "Show task history",
-            "Request status update"
-          ].map((s, i) => (
-            <Button
-              key={i}
-              variant="outline"
-              size="sm"
-              className="text-xs border-gray-600 bg-gray-900 hover:bg-gray-700"
-              onClick={() => setNewMessage(s)}
+            "Request status update",
+          ].map((action, idx) => (
+            <button
+              key={action}
+              className="chip-action flex-shrink-0 px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs whitespace-nowrap border border-gray-300 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+              tabIndex={0}
+              onClick={() => { setNewMessage(action); sendMessage(action); }}
+              aria-label={action}
             >
-              {s}
-            </Button>
+              {action}
+            </button>
           ))}
         </div>
-
-        {/* Input Area */}
-        <div className="flex items-end gap-2 p-3 border-t border-gray-700 bg-gray-800">
+        {/* Main Row: Action Extract, Input, Send */}
+        <div className="flex items-end gap-2 w-full">
+          {/* Extract Action Items */}
+          <button
+            onClick={() => setIsActionExtractorOpen(true)}
+            className="icon-btn p-2 bg-gray-100 rounded-full border border-gray-300 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+            title="Extract Action Items"
+            aria-label="Extract Action Items"
+            disabled={!isConnected}
+          >
+            <ListChecks className="w-5 h-5 text-gray-500" />
+          </button>
+          {/* Chat Input */}
           <Textarea
-            className="flex-1 resize-none rounded-lg bg-gray-900 border border-gray-700 text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="chat-input flex-1 resize-none min-h-[40px] max-h-[140px] rounded-full bg-gray-50 border border-gray-300 text-gray-900 px-5 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-400 transition placeholder-gray-400"
             rows={2}
             value={newMessage}
             onChange={e => setNewMessage(e.target.value)}
             onKeyDown={e => {
               if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                handleSendClick();
+                if (newMessage.trim() && isConnected) handleSendClick();
               }
+              // Shift+Enter for newline
             }}
-            placeholder="Type your message..."
+            placeholder="Type your message…"
+            aria-label="Chat message"
+            autoFocus
+            disabled={!isConnected}
           />
-          <Button
-            className="h-10 w-10 flex items-center justify-center rounded-full bg-gradient-to-r from-[#283048] to-[#859398] shadow-lg hover:from-[#859398] hover:to-[#283048] transition-all"
+        <Button
+          className="h-10 w-10 flex items-center justify-center rounded-full bg-gradient-to-r from-[#283048] to-[#859398] shadow-lg hover:from-[#859398] hover:to-[#283048] transition-all"
             onClick={handleSendClick}
             disabled={!newMessage.trim() || !isConnected}
           >
-            <ArrowUpIcon className="h-5 w-5" />
+            <ArrowUpIcon className="w-5 h-5 rotate-45" />
           </Button>
         </div>
-        
-        {/* Status Update Initiator (only shown for employees) */}
-        {/* {selectedUserId !== 'user_manager' && (
-          <Button
-            size="sm"
-            variant="secondary"
-            className="mt-2 text-xs"
-            onClick={handleProactiveUpdateTrigger}
-          >
-            Send Status Update
-          </Button>
-        )} */}
       </div>
 
       {/* Task Creation Form Modal */}
@@ -655,6 +681,38 @@ const SseChat: React.FC = () => {
           currentStatus={currentTaskForUpdate.status}
         />
       )}
+
+      {/* Action Item Extraction Modal */}
+      {isActionExtractorOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-2xl relative">
+            <Button
+              className="absolute top-2 right-2 text-xs"
+              size="sm"
+              variant="ghost"
+              onClick={() => setIsActionExtractorOpen(false)}
+            >
+              Close
+            </Button>
+            <ActionItemExtractor
+              initialText={messages.slice(-10).map(m => `${m.sender === 'user' ? 'User' : 'AI'}: ${m.content || ''}`).join('\n')}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Sliding Summary Drawer */}
+      {/* <div className={`fixed inset-y-0 right-0 w-80 bg-gray-900 border-l border-gray-700 shadow-xl transform transition-transform z-50 ${isSummaryOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex items-center justify-between p-4 border-b border-gray-700">
+          <h4 className="text-lg font-semibold text-gray-100">Summary</h4>
+          <button onClick={() => setIsSummaryOpen(false)} className="text-gray-100 hover:text-white">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="p-4 overflow-auto h-full">
+          <SummaryPanel userId={selectedUserId} />
+        </div>
+      </div> */}
 
       {/* Typing Indicator Style */}
       <style jsx>{`

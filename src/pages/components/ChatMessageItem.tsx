@@ -39,7 +39,7 @@ const ChatMessageItem: React.FC<Message & { message?: string; onTaskSelect?: (ta
 
   // Main chat row
   return (
-    <div className={`flex items-end gap-2 mb-2 ${sender === "user" ? "justify-end" : "justify-start"}`}>
+    <div className={`flex items-end gap-4 mb-4 ${sender === "user" ? "justify-end" : "justify-start"}`}>
       {sender === "ai" && renderAvatar()}
       <div className="flex flex-col max-w-[80%]">
         {/* Meta info */}
@@ -51,11 +51,11 @@ const ChatMessageItem: React.FC<Message & { message?: string; onTaskSelect?: (ta
         {/* Bubble */}
         <div className={[
           styles["chat-message-content"],
-          "rounded-2xl px-4 py-2.5",
+          "rounded-xl px-5 py-3 shadow-lg",
           sender === "user"
-            ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-br-none"
+            ? "bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-br-none"
             : sender === "ai"
-            ? "bg-gradient-to-r from-white/20 to-white/10 text-slate-100 rounded-bl-none"
+            ? "bg-gradient-to-br from-gray-700 to-gray-800 text-gray-200 rounded-bl-none"
             : ""
         ].join(" ")}>
           {type === 'connection' || sender === 'system' ? (
@@ -84,7 +84,7 @@ const ChatMessageItem: React.FC<Message & { message?: string; onTaskSelect?: (ta
                       {onTaskSelect && (
                         <button
                           onClick={() => onTaskSelect(t)}
-                          className="mt-2 px-2 py-1 text-xs text-white bg-gradient-to-br from-[#283048] to-[#859398] rounded-full shadow-sm hover:opacity-90"
+                          className=" mt-2 px-2 py-1 text-xs text-white bg-gradient-to-br from-[#283048] to-[#859398] rounded-full shadow-sm hover:opacity-90"
                         >
                           Update Status
                         </button>
@@ -92,7 +92,7 @@ const ChatMessageItem: React.FC<Message & { message?: string; onTaskSelect?: (ta
                       {onRequestStatus && (
                         <button
                           onClick={() => onRequestStatus(t)}
-                          className="mt-2 ml-2 px-2 py-1 text-xs text-white bg-gradient-to-br from-[#283048] to-[#859398] rounded-full shadow-sm hover:opacity-90"
+                          className=" mt-2 ml-2 px-2 py-1 text-xs text-white bg-gradient-to-br from-[#283048] to-[#859398] rounded-full shadow-sm hover:opacity-90"
                         >
                           Request Status
                         </button>
@@ -135,6 +135,16 @@ const ChatMessageItem: React.FC<Message & { message?: string; onTaskSelect?: (ta
               ) : (
                 <div className={styles["chat-task-list-empty"]}>No history available.</div>
               )}
+            </div>
+          ) : type === 'action_request' && task ? (
+            <div className={styles["chat-message-action-request"] || "flex flex-col"}>
+              <div>{displayContent}</div>
+              <button
+                onClick={() => onTaskSelect && onTaskSelect(task)}
+                className="max-w-52 mt-2 px-2 py-1 text-xs text-white bg-gradient-to-br from-[#283048] to-[#859398] rounded-full shadow-sm hover:opacity-90"
+              >
+                Update Status
+              </button>
             </div>
           ) : type === 'project_plan_created' ? (
             <div className={styles["chat-message-notification"]}>

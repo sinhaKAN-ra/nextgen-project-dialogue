@@ -45,8 +45,8 @@ const TaskStatusUpdate: React.FC<TaskStatusUpdateProps> = ({
         body: JSON.stringify({ comment, task_name: taskName })
       });
       const data = await res.json();
-      if (data.formatted) {
-        setComment(data.formatted);
+      if (data.rephrased) {
+        setComment(data.rephrased);
         sendToast('Comment polished', 'success');
       } else {
         sendToast('Failed to polish comment', 'error');
