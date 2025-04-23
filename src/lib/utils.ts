@@ -50,3 +50,25 @@ export const sendToast = (
     duration: duration,
   });
 };
+
+export const addSurveyResponse = async (data: any) => {
+  console.log(data);
+  
+  const { error } = await supabase
+    .from('survey_responses')
+    .insert(
+      {
+        created_at: new Date().toISOString(),
+        responses: data,
+      }
+    );
+
+  if (error) {
+    console.error('Error adding survey response:', error);
+    throw error
+  } else {
+    console.log('Survey response added successfully');
+    sendToast('Survey response added successfully', 'success');
+    return true;
+  }
+}

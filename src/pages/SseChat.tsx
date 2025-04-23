@@ -69,6 +69,10 @@ const SseChat: React.FC = () => {
   const [currentTaskForUpdate, setCurrentTaskForUpdate] = useState<TaskDetail | null>(null);
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
+  // MCQ clarification state
+  const [mcqQuestion, setMcqQuestion] = useState<string | null>(null);
+  const [mcqOptions, setMcqOptions] = useState<string[]>([]);
+
   const { toast } = useToast();
   const messageEndRef = useRef<HTMLDivElement>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
@@ -90,6 +94,8 @@ const SseChat: React.FC = () => {
     setIsConnected(false);
     setMessages([]);
     setCurrentSuggestedReplies([]);
+    setMcqQuestion(null);
+    setMcqOptions([]);
 
     const sseUrl = `http://localhost:8000/sse/chat-stream/${selectedUserId}`;
     console.log(`Attempting SSE: ${sseUrl}`);
@@ -105,6 +111,9 @@ const SseChat: React.FC = () => {
       };
 
       eventSource.onmessage = (event) => {
+        // Clear any existing MCQ when a new message arrives
+        setMcqQuestion(null);
+        setMcqOptions([]);
         console.log('SSE raw data:', event.data);
         setIsAiSpeaking(true);
         setCurrentSuggestedReplies([]); // Clear old suggestions first
@@ -182,6 +191,13 @@ const SseChat: React.FC = () => {
             } else {
               setIsAiSpeaking(false);
             }
+          }
+          else if (data.type === 'clarification_mcq') {
+            // Handle MCQ clarification
+            setMcqQuestion(data.content);
+            setMcqOptions(data.options || []);
+            setIsAiSpeaking(false);
+            return;
           }
           // Handle CONTENT messages
           else if (data.content) {
@@ -593,6 +609,28 @@ const SseChat: React.FC = () => {
           </motion.div>
         )}
         
+        {/* Clarification MCQ */}
+        {mcqQuestion && (
+          <div className="clarification-mcq mt-2 text-gray-200">
+            <div className="mb-2 font-semibold">{mcqQuestion}</div>
+            <div className="flex flex-wrap gap-2">
+              {mcqOptions.map((opt) => (
+                <button
+                  key={opt}
+                  className="px-3 py-1 bg-indigo-600 text-white rounded-full hover:bg-indigo-500"
+                  onClick={() => {
+                    sendMessage(opt);
+                    setMcqQuestion(null);
+                    setMcqOptions([]);
+                  }}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        
         <div ref={messageEndRef} />
       </div>
 
@@ -647,12 +685,12 @@ const SseChat: React.FC = () => {
             placeholder="Type your message…"
             aria-label="Chat message"
             autoFocus
-            disabled={!isConnected}
+            disabled={!isConnected || !!mcqQuestion}
           />
         <Button
           className="h-10 w-10 flex items-center justify-center rounded-full bg-gradient-to-r from-[#283048] to-[#859398] shadow-lg hover:from-[#859398] hover:to-[#283048] transition-all"
             onClick={handleSendClick}
-            disabled={!newMessage.trim() || !isConnected}
+            disabled={!!mcqQuestion || !newMessage.trim() || !isConnected}
           >
             <ArrowUpIcon className="w-5 h-5 rotate-45" />
           </Button>

@@ -44,42 +44,43 @@ const Header: React.FC = () => {
           </div>
 
           <nav className="hidden md:flex space-x-8">
+          <a
+              href="/#experience"
+              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
+            >
+              How It Works
+            </a>
             <a
               href="/#features"
               className="text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
               Features
             </a>
+            
             <a
-              href="/#workflow"
+              href="/#difference"
               className="text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
-              How It Works
+              Difference
             </a>
-            <a
-              href="/#get-started"
-              className="text-sm font-medium text-white/70 hover:text-white transition-colors"
-            >
-              Get Started
-            </a>
-            <Link
+            {/* <Link
               to="/project-board"
               className="text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
               Demo Board
-            </Link>
+            </Link> */}
             {/* <Link
               to="/chat"
               className="text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
               Chat Demo (WS)
             </Link> */}
-            <Link
+            {/* <Link
               to="/sse-chat"
               className="text-sm font-medium text-white/70 hover:text-white transition-colors"
             >
               Demo (SSE)
-            </Link>
+            </Link> */}
           </nav>
 
           <div className="flex items-center space-x-4">

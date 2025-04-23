@@ -9,6 +9,10 @@ import Chat from './pages/Chat';
 import SseChat from './pages/SseChat';
 import NotFound from "./pages/NotFound";
 import { Analytics } from "@vercel/analytics/react"
+import TermsOfService from "./pages/TermsOfService";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
+import Footer from "./components/Footer";
 
 const queryClient = new QueryClient();
 
@@ -25,10 +29,15 @@ const App = () => (
           <Route path="/project-board" element={<ProjectBoard />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/sse-chat" element={<SseChat />} />
+          <Route path="/terms-of-service" element={<TermsOfService/>}/>
+          <Route path="/privacy-policy" element={<PrivacyPolicy/>}/>
+          <Route path="/cookie-policy" element={<CookiePolicy/>}/>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
+      <Footer />
+
     </TooltipProvider>
   </QueryClientProvider>
 );
