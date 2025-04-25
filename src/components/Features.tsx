@@ -131,45 +131,47 @@ const Features = () => {
       whileInView={{ opacity: 1, y: 0 }} 
       viewport={{ once: true, amount: 0.3 }} 
       transition={{ duration: 0.8 }} 
-      className="py-28 relative overflow-hidden"
+      className="py-12 sm:py-16 md:py-20 lg:py-28 relative overflow-hidden"
     >
-      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-40 h-4 bg-gradient-to-r from-[#9a9ea9] to-[#b4c5cb] rounded-full opacity-80 animate-gradient-x mb-8" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-2 bg-gradient-to-r from-[#7f5fff] to-[#32c5ff] rounded-full opacity-80 animate-pulse mb-10" />
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-32 h-2 bg-gradient-to-r from-[#32c5ff] to-[#ff6fd8] rounded-full opacity-70 mb-8" />
+      {/* Decorative elements - made responsive */}
+      <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-24 sm:w-32 md:w-40 h-3 sm:h-4 bg-gradient-to-r from-[#9a9ea9] to-[#b4c5cb] rounded-full opacity-80 animate-gradient-x mb-8" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 sm:w-32 md:w-40 h-1.5 sm:h-2 bg-gradient-to-r from-[#7f5fff] to-[#32c5ff] rounded-full opacity-80 animate-pulse mb-10" />
+      <div className="absolute top-6 sm:top-8 md:top-10 left-1/2 -translate-x-1/2 w-20 sm:w-24 md:w-32 h-1.5 sm:h-2 bg-gradient-to-r from-[#32c5ff] to-[#ff6fd8] rounded-full opacity-70 mb-8" />
       <div className="absolute inset-0 bg-white/10 backdrop-blur-lg pointer-events-none"></div>
       
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-6">
+        <div className="text-center max-w-3xl mx-auto mb-10 md:mb-16 space-y-4 md:space-y-6">
           <div className="inline-block reveal">
             <span className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-400 to-purple-400 rounded-full">
               The Problem
             </span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white drop-shadow-4xl reveal">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow-4xl reveal">
             No More Manual Reporting
           </h2>
-          <p className="text-lg text-white/90 reveal max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-white/90 reveal max-w-2xl mx-auto px-2">
             Businesses lose 20+ hours per week on manual reporting across departments. Scattered data, inconsistent formats, and delayed insights cost you time and money.
           </p>
-          <p className="text-lg text-white/90 reveal max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-white/90 reveal max-w-2xl mx-auto px-2">
             Our AI-powered platform eliminates report creation busywork, uncovers hidden insights, and delivers department-specific analytics automatically.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Features grid - improved for mobile */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {featuresData.map((feature) => (
             <div 
               key={feature.id} 
-              className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-8 shadow-2xl hover:shadow-2xl transition-all duration-300 reveal flex flex-col items-center text-center h-full"
+              className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg hover:shadow-xl transition-all duration-300 reveal flex flex-col items-center text-center h-full"
             >
-              <div className={`w-12 h-12 rounded-md bg-gradient-to-r ${departmentColors[feature.department]} flex items-center justify-center text-white mb-4`}>
+              <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-gradient-to-r ${departmentColors[feature.department]} flex items-center justify-center text-white mb-3 sm:mb-4`}>
                 {feature.icon}
               </div>
-              <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-600 text-white mb-3">
+              <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-600 text-white mb-2 sm:mb-3">
                 {feature.department}
               </span>
-              <h3 className="text-xl text-white font-semibold mb-2">{feature.title}</h3>
-              <p className="text-white mb-4 flex-grow">{feature.description}</p>
+              <h3 className="text-lg sm:text-xl text-white font-semibold mb-2">{feature.title}</h3>
+              <p className="text-sm sm:text-base text-white mb-3 sm:mb-4 flex-grow">{feature.description}</p>
               <div className={`rounded-full px-3 py-1 inline-block text-xs font-medium bg-gradient-to-r ${departmentColors[feature.department]}`}>
                 {feature.benefit}
               </div>
@@ -177,73 +179,11 @@ const Features = () => {
           ))}
         </div>
         
-        {/* ROI Calculator Section */}
-        <div className="mt-16 bg-white/20 backdrop-blur-sm rounded-xl p-8 border border-white/20 max-w-4xl mx-auto reveal">
-          {/* <h3 className="text-2xl font-bold text-white mb-6 text-center">Calculate Your Department's ROI</h3> */}
+        {/* ROI Calculator Section - improved for mobile */}
+        <div className="mt-10 sm:mt-12 md:mt-16 bg-white/20 backdrop-blur-sm rounded-lg sm:rounded-xl p-4 sm:p-6 md:p-8 border border-white/20 mx-auto reveal max-w-full sm:max-w-4xl">
           <ROICalculator />
-
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-white">Department Size:</span>
-                  <div className="flex space-x-2">
-                    <button className="w-8 h-8 rounded bg-white/10 text-white flex items-center justify-center">5</button>
-                    <button className="w-8 h-8 rounded bg-white/5 text-white/70 flex items-center justify-center">10</button>
-                    <button className="w-8 h-8 rounded bg-white/5 text-white/70 flex items-center justify-center">25+</button>
-                  </div>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-white">Department:</span>
-                  <select className="bg-white/10 border border-white/20 rounded px-3 py-2 text-white">
-                    <option>HR</option>
-                    <option>Legal</option>
-                    <option>Finance</option>
-                    <option>Compliance</option>
-                    <option>Project Management</option>
-                  </select>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-white">Current Reporting Hours/Week:</span>
-                  <select className="bg-white/10 border border-white/20 rounded px-3 py-2 text-white">
-                    <option>10-15 hours</option>
-                    <option>16-25 hours</option>
-                    <option>26+ hours</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white/10 rounded-xl p-6 flex flex-col justify-center">
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-white/80">Hours Saved Monthly:</span>
-                  <span className="text-white font-bold">160 hours</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/80">Cost Savings Monthly:</span>
-                  <span className="text-white font-bold">$12,800</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/80">Risk Reduction:</span>
-                  <span className="text-white font-bold">42%</span>
-                </div>
-                <div className="h-px bg-white/20 my-3"></div>
-                <div className="flex justify-between">
-                  <span className="text-white font-medium">Annual ROI:</span>
-                  <span className="text-white font-bold text-xl">547%</span>
-                </div>
-              </div>
-              
-              <button className="mt-6 py-2 px-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg text-white font-medium hover:opacity-90 transition-opacity">
-                Get Your Custom ROI Report
-              </button>
-            </div>
-          </div> */}
           
-          <p className="text-center text text-sm mt-6 bg-white rounded-xl p-4">
+          <p className="text-center text-xs sm:text-sm mt-4 sm:mt-6 bg-white rounded-lg sm:rounded-xl p-3 sm:p-4">
             ✓ Eliminate manual reporting tasks ✓ Uncover hidden operational insights ✓ Make faster, data-driven decisions
           </p>
         </div>

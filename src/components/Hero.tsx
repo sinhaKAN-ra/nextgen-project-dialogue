@@ -79,7 +79,7 @@ const Hero: React.FC = () => {
               </p>
             </motion.div>
 
-            <motion.div
+            {/* <motion.div
               className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-4 max-w-sm"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -91,7 +91,7 @@ const Hero: React.FC = () => {
                   <span className="font-bold">{count}</span> teams on waitlist – spots filling fast
                 </p>
               </div>
-            </motion.div>
+            </motion.div> */}
 
             <motion.div
               initial={{ opacity: 0, y: 20 }}

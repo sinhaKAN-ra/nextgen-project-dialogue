@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Zap, Lock, Mail, ChevronRight, X } from 'lucide-react';
 import emailjs from '@emailjs/browser';
 import { addToNewsletter } from '@/lib/utils';
+import { supabase } from '@/lib/supabaseClient';
 
 interface WaitlistComponentProps {
   onClose?: () => void;
@@ -11,7 +12,7 @@ interface WaitlistComponentProps {
 const WaitlistComponent: React.FC<WaitlistComponentProps> = ({ onClose }) => {
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
-  const [count, setCount] = useState(482);
+  const [count, setCount] = useState(0);
   const [position, setPosition] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,16 +21,26 @@ const WaitlistComponent: React.FC<WaitlistComponentProps> = ({ onClose }) => {
     // Initialize EmailJS with your public key
     emailjs.init('ndFEdP-RZLUEzvJTh');
     
-    // Simulate counting up effect for waitlist numbers
-    const interval = setInterval(() => {
-      setCount(prev => {
-        if (prev < 500) return prev + 1;
-        clearInterval(interval);
-        return prev;
-      });
-    }, 8000);
-    
-    return () => clearInterval(interval);
+    // Fetch initial waitlist count and subscribe to real-time updates
+    const fetchCount = async () => {
+      const { count: initialCount, error } = await supabase
+        .from('nomore_newsletter')
+        .select('*', { count: 'exact', head: true });
+      if (!error && initialCount !== null) setCount(initialCount);
+    };
+    fetchCount();
+    // Subscribe to real-time inserts via channel
+    const channel = supabase
+      .channel('newsletter-waitlist')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'nomore_newsletter' },
+        () => setCount(prev => prev + 1)
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const sendWelcomeEmail = async (userEmail: string, position: number) => {

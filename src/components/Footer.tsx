@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from 'framer-motion';
 import { Twitter, Linkedin, Mail, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -63,9 +64,9 @@ const Footer: React.FC = () => {
                   { label: "Cookie Policy", href: "cookie-policy" },
                 ].map((item, i) => (
                   <li key={i}>
-                    <a href={item.href} className="text-white/70 hover:text-[#32c5ff] transition-colors text-sm">
+                    <Link to={`/${item.href}`} className="text-white/70 hover:text-[#32c5ff] transition-colors text-sm">
                       {item.label}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
