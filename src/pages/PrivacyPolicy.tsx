@@ -111,20 +111,20 @@ const policySections = [
       </>
     ),
   },
-  {
-    title: '10. Contact Us',
-    content: (
-      <>
-        <p className="text-white">If you have any questions about this Privacy Policy, please contact us at:</p>
-        <address className="not-italic text-white mt-2">
-          Nomore.Report<br />
-          [Your Address]<br />
-          [Your City, State ZIP]<br />
-          Email: <a href="mailto:privacy@nomore.report" className="underline text-blue-300">privacy@nomore.report</a>
-        </address>
-      </>
-    ),
-  },
+  // {
+  //   title: '10. Contact Us',
+  //   content: (
+  //     <>
+  //       <p className="text-white">If you have any questions about this Privacy Policy, please contact us at:</p>
+  //       <address className="not-italic text-white mt-2">
+  //         Nomore.Report<br />
+  //         [Your Address]<br />
+  //         [Your City, State ZIP]<br />
+  //         Email: <a href="mailto:privacy@nomore.report" className="underline text-blue-300">privacy@nomore.report</a>
+  //       </address>
+  //     </>
+  //   ),
+  // },
 ];
 
 const PrivacyPolicy: React.FC = () => {

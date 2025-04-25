@@ -181,20 +181,20 @@ const termsSections = [
       </>
     )
   },
-  {
-    title: '15. Contact Information',
-    content: (
-      <>
-        <p className="text-white">If you have any questions about these Terms, please contact us at:</p>
-        <address className="not-italic mt-2 text-white">
-          Nomore.Report<br />
-          [Your Address]<br />
-          [Your City, State ZIP]<br />
-          Email: <a href="mailto:contact@nomore.report" className="underline text-blue-300">contact@nomore.report</a>
-        </address>
-      </>
-    )
-  },
+  // {
+  //   title: '15. Contact Information',
+  //   content: (
+  //     <>
+  //       <p className="text-white">If you have any questions about these Terms, please contact us at:</p>
+  //       <address className="not-italic mt-2 text-white">
+  //         Nomore.Report<br />
+  //         [Your Address]<br />
+  //         [Your City, State ZIP]<br />
+  //         Email: <a href="mailto:contact@nomore.report" className="underline text-blue-300">contact@nomore.report</a>
+  //       </address>
+  //     </>
+  //   )
+  // },
 ];
 
 const TermsOfService = () => {
