@@ -3,7 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowRight, FileText, CheckCircle, BarChart, MessageSquare, 
   ChevronLeft, ChevronRight, RefreshCw, Clock, Users, 
-  TrendingUp, AlertTriangle, Zap, ThumbsUp
+  TrendingUp, AlertTriangle, Zap, ThumbsUp,
+  UploadCloud,
+  Link,
+  MessageCircle,
+  ShieldOff,
+  BarChart2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { addSurveyResponse } from "@/lib/utils";
@@ -184,12 +189,79 @@ const surveyQuestions = [
   },
   // Open Feedback - Feature Request
   {
-    id: 13,
-    section: "Final Thoughts",
-    icon: MessageSquare,
-    question: "Anything else you'd like to see in a tool like this?",
-    type: "input",
-    options: [],
+    id: 14,
+    section: "Data Sources",
+    icon: UploadCloud,
+    question: "Which sources would you most like to upload or connect for analysis?",
+    type: "multi",
+    options: [
+      "PDF reports",
+      "Excel/CSV",
+      "Google Sheets/Drive",
+      "Notion/Confluence",
+      "CRM (Salesforce, HubSpot)",
+      "Slack/Teams exports",
+      "Other: ___________"
+    ],
+    maxSelections: 3
+  },
+  // Integration Preferences
+  {
+    id: 15,
+    section: "Integrations",
+    icon: Link,
+    question: "How important is native integration with tools you already use?",
+    type: "mcq",
+    options: [
+      "Critical",
+      "Nice to have",
+      "Neutral",
+      "Unnecessary"
+    ]
+  },
+  // Conversational UI Comfort
+  {
+    id: 16,
+    section: "Interaction",
+    icon: MessageCircle,
+    question: "How comfortable would you be using a chat interface to refine reports and ask follow-up questions?",
+    type: "mcq",
+    options: [
+      "Very comfortable",
+      "Somewhat comfortable",
+      "Neutral",
+      "Prefer traditional dashboards"
+    ]
+  },
+  // Data Security Concerns
+  {
+    id: 17,
+    section: "Security",
+    icon: ShieldOff,
+    question: "How concerned are you about uploading sensitive business documents to an AI platform?",
+    type: "mcq",
+    options: [
+      "Very concerned",
+      "Somewhat concerned",
+      "Not concerned"
+    ]
+  },
+  // Desired Analysis Types
+  {
+    id: 18,
+    section: "Analysis Types",
+    icon: BarChart2,
+    question: "Which analyses would you use most often? (Select up to 3)",
+    type: "multi",
+    options: [
+      "Budget vs. Actual Variance",
+      "Trend & Forecasting",
+      "Sentiment & Morale Tracking",
+      "Skill-Gap Identification",
+      "Compliance/Risk Flags",
+      "Custom KPI Dashboards"
+    ],
+    maxSelections: 3
   },
 ];
 
@@ -324,7 +396,7 @@ const DemoExperience = () => {
       
       // Redirect after showing completion message
       setTimeout(() => {
-        navigate('/#home');
+        navigate('/');
       }, 3000);
       
     } catch (err) {
@@ -463,7 +535,7 @@ const DemoExperience = () => {
               
               <div className="flex items-center justify-center">
                 <RefreshCw className="animate-spin h-5 w-5 text-white/60 mr-3" />
-                <span className="text-white/60">Redirecting to your demo...</span>
+                <span className="text-white/60">Please join our list</span>
               </div>
             </motion.div>
           ) : (
