@@ -124,15 +124,18 @@ const Features = () => {
     };
   }, []);
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;
+
   return (
-    <motion.section 
-      id="features" 
-      initial={{ opacity: 0, y: 50 }} 
-      whileInView={{ opacity: 1, y: 0 }} 
-      viewport={{ once: true, amount: 0.3 }} 
-      transition={{ duration: 0.8 }} 
-      className="py-12 sm:py-16 md:py-20 lg:py-28 relative overflow-hidden"
-    >
+    <motion.section
+    id="features"
+    initial={isMobile ? false : { opacity: 0, y: 50 }}
+    animate={isMobile ? { opacity: 1, y: 0 } : undefined}
+    whileInView={isMobile ? undefined : { opacity: 1, y: 0 }}
+    viewport={isMobile ? undefined : { once: true, amount: 0.3 }}
+    transition={{ duration: 0.8 }}
+    className="py-12 sm:py-16 md:py-20 lg:py-28 relative overflow-hidden"
+  >
       {/* Decorative elements - made responsive */}
       <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-24 sm:w-32 md:w-40 h-3 sm:h-4 bg-gradient-to-r from-[#9a9ea9] to-[#b4c5cb] rounded-full opacity-80 animate-gradient-x mb-8" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 sm:w-32 md:w-40 h-1.5 sm:h-2 bg-gradient-to-r from-[#7f5fff] to-[#32c5ff] rounded-full opacity-80 animate-pulse mb-10" />

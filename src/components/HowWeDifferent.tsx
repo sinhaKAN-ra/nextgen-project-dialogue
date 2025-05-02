@@ -55,15 +55,15 @@ const departmentROI = [
 
 const HowWeDifferent = () => {
   const [showWaitlist, setShowWaitlist] = useState(false);
-  const navigate = useNavigate();
-  return (
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;  return (
     <motion.section 
     id="difference"
-      initial={{ opacity: 0, y: 50 }} 
-      whileInView={{ opacity: 1, y: 0 }} 
-      viewport={{ once: true, amount: 0.3 }} 
-      transition={{ duration: 0.8 }} 
-      className="py-32 relative overflow-hidden bg-gradient-to-b from-gray-900 to-gray-800"
+    initial={isMobile ? false : { opacity: 0, y: 50 }}
+    animate={isMobile ? { opacity: 1, y: 0 } : undefined}
+    whileInView={isMobile ? undefined : { opacity: 1, y: 0 }}
+    viewport={isMobile ? undefined : { once: true, amount: 0.3 }}
+    transition={{ duration: 0.8 }}
+    className="py-32 relative overflow-hidden bg-gradient-to-b from-gray-900 to-gray-800"
     >
       {/* Branded accent elements */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-2 bg-gradient-to-r from-[#7f5fff] to-[#32c5ff] rounded-full opacity-80 animate-pulse mb-10" />
