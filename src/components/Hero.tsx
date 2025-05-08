@@ -81,11 +81,11 @@ const Hero: React.FC = () => {
               <h1 className="text-5xl md:text-6xl lg:text-6xl font-extrabold tracking-tighter text-white drop-shadow-2xl mb-6">
                 Your Business.<br />
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00F0FF] via-[#00A3FF] to-[#0057FF] animate-gradient-x">
-                  One Command Center.
+                  AI Command Center.
                 </span>
               </h1>
               <p className="mt-4 mb-8 text-lg md:text-2xl text-white/90 font-medium max-w-xl mx-auto drop-shadow">
-                Connect your tools. Monitor everything. Make decisions faster. Your complete business command center that brings all your data and tools into one unified dashboard.
+                Connect your tools, data and team. Monitor everything. Make decisions faster. Your complete business command center that brings all your work into one unified platform.
               </p>
             </motion.div>
 
