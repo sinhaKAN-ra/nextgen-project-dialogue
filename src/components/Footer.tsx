@@ -7,13 +7,16 @@ const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   
   return (
-    <motion.footer 
+    // <footer className="relative bg-black/50 backdrop-blur-lg border-t border-white/10">
+
+     <motion.footer 
       initial={{ opacity: 0, y: 50 }} 
       whileInView={{ opacity: 1, y: 0 }} 
       viewport={{ once: true, amount: 0.3 }} 
       transition={{ duration: 0.5 }} 
       className="relative bg-gradient-to-b from-gray-800 to-gray-900 text-white py-12 overflow-hidden"
-    >
+    > 
+      
       {/* Background elements */}
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm pointer-events-none z-0"></div>
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#7f5fff] to-[#32c5ff]"></div>
@@ -73,15 +76,24 @@ const Footer: React.FC = () => {
             </div>
           </div>
         </div>
-        
-        {/* Copyright */}
-        <div className="relative z-10 mt-8 pt-6 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-white/60">
-            {currentYear} nomore.report. All rights reserved.
-          </p>
-          <div className="flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full">
-            {/* <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span> */}
-            {/* <span className="text-xs text-white/80">All systems operational</span> */}
+
+        {/* Bottom bar */}
+        <div className="pt-8 mt-8 border-t border-white/10">
+          <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+            <p className="text-white/40 text-sm">
+              © {currentYear} MissionControl.AI. All rights reserved.
+            </p>
+            <div className="flex space-x-6">
+              <a href="#" className="text-white/40 hover:text-white/60 text-sm transition-colors">
+                Privacy Policy
+              </a>
+              <a href="#" className="text-white/40 hover:text-white/60 text-sm transition-colors">
+                Terms of Service
+              </a>
+              <a href="#" className="text-white/40 hover:text-white/60 text-sm transition-colors">
+                Cookie Policy
+              </a>
+            </div>
           </div>
         </div>
       </div>

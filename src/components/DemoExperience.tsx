@@ -315,7 +315,7 @@ const DemoExperience = () => {
       whileInView={{ opacity: 1, y: 0 }} 
       viewport={{ once: true, amount: 0.3 }} 
       transition={{ duration: 0.8 }} 
-      className="py-32 relative overflow-hidden bg-gradient-to-b from-gray-900 to-gray-800"
+      className="py-32 relative overflow-hidden "
     >
       {/* Branded accent elements */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-2 bg-gradient-to-r from-[#7f5fff] to-[#32c5ff] rounded-full opacity-80 animate-pulse mb-10" />
