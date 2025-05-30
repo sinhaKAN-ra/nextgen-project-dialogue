@@ -145,18 +145,18 @@ const Features = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center max-w-3xl mx-auto mb-10 md:mb-16 space-y-4 md:space-y-6">
           <div className="inline-block reveal">
-            <span className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-400 to-purple-400 rounded-full">
-              The Problem
+            <span className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-[#7f5fff] via-[#32c5ff] to-[#ff6fd8] rounded-full">
+              The Problem We Solve
             </span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white drop-shadow-4xl reveal">
-            No More Manual Reporting
+            Stop Wasting Time on Reports
           </h2>
           <p className="text-base sm:text-lg text-white/90 reveal max-w-2xl mx-auto px-2">
-            Businesses lose 20+ hours per week on manual reporting across departments. Scattered data, inconsistent formats, and delayed insights cost you time and money.
+            Businesses and teams waste significant time and effort manually creating reports and switching between tools just to understand what's happening.
           </p>
           <p className="text-base sm:text-lg text-white/90 reveal max-w-2xl mx-auto px-2">
-            Our AI-powered platform eliminates report creation busywork, uncovers hidden insights, and delivers department-specific analytics automatically.
+            We eliminate that friction by automatically gathering data from scattered sources, monitoring key metrics in real-time, and clarifying planning, execution, and results—without the overhead of building custom dashboards or reports.
           </p>
         </div>
 

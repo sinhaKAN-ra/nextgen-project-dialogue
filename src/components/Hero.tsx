@@ -75,17 +75,17 @@ const Hero: React.FC = () => {
               <div className="flex items-center gap-2">
                 <Command className="h-5 w-5 text-cyan-400" />
                 <span className="px-3 py-1 text-xs font-medium bg-cyan-400/20 text-cyan-400 rounded-full">
-                  Mission Control for Business
+                  End Manual Reporting Friction
                 </span>
               </div>
               <h1 className="text-5xl md:text-6xl lg:text-6xl font-extrabold tracking-tighter text-white drop-shadow-2xl mb-6">
-                Your Business.<br />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#00F0FF] via-[#00A3FF] to-[#0057FF] animate-gradient-x">
-                  AI Command Center.
+              AI Command Center<br />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#7f5fff] via-[#32c5ff] to-[#ff6fd8] animate-gradient-x">
+                  Reports & Dashboards.
                 </span>
               </h1>
               <p className="mt-4 mb-8 text-lg md:text-2xl text-white/90 font-medium max-w-xl mx-auto drop-shadow">
-                Connect your tools, data and team. Monitor everything. Make decisions faster. Your complete business command center that brings all your work into one unified platform.
+                Automatically gather and interpret data from scattered sources. Monitor key metrics in real-time. Clarify planning, execution, and results—without the overhead of manual reporting.
               </p>
             </motion.div>
 
@@ -148,8 +148,8 @@ const Hero: React.FC = () => {
                 <div className="w-8 h-8 rounded-full bg-cyan-400/20 flex items-center justify-center flex-shrink-0">
                   <Command className="h-4 w-4 text-cyan-400" />
                 </div>
-                <div className="bg-white/5 rounded-lg p-3 text-sm text-white border border-cyan-500/20">
-                  "Show me the current status of all connected systems and highlight any anomalies."
+                <div className="bg-white/5 rounded-lg p-3 text-sm text-white border border-[#7f5fff]/20">
+                  "Gather all our sales data, marketing metrics, and customer feedback and show me our Q2 performance."
                 </div>
               </div>
 
@@ -160,16 +160,16 @@ const Hero: React.FC = () => {
                 <div className="bg-[#0B1026] rounded-lg p-4 text-sm border-l-2 border-cyan-500">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center text-white/90">
-                      <span>CRM Status</span>
-                      <span className="text-green-400">98% Operational</span>
+                      <span>Sales Performance</span>
+                      <span className="text-green-400">↑ 23% vs Last Quarter</span>
                     </div>
                     <div className="flex justify-between items-center text-white/90">
-                      <span>Financial Systems</span>
-                      <span className="text-yellow-400">Warning: 2 Updates Pending</span>
+                      <span>Marketing ROI</span>
+                      <span className="text-[#32c5ff]">↑ 18% Higher Conversion</span>
                     </div>
                     <div className="flex justify-between items-center text-white/90">
-                      <span>Team Productivity</span>
-                      <span className="text-cyan-400">↑ 15% This Week</span>
+                      <span>Customer Satisfaction</span>
+                      <span className="text-[#ff6fd8]">↑ 12% Improvement</span>
                     </div>
                   </div>
                 </div>
@@ -182,14 +182,14 @@ const Hero: React.FC = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Command size={20} className="text-cyan-400" />
+              <Command size={20} className="text-[#7f5fff]" />
               <input
                 type="text"
                 disabled
-                placeholder="Enter command..."
+                placeholder="Ask any question about your business metrics..."
                 className="flex-1 bg-transparent text-white placeholder-white/50 focus:outline-none"
               />
-              <Send size={20} className="text-cyan-400" />
+              <Send size={20} className="text-[#32c5ff]" />
             </motion.div>
           </motion.div>
         </div>

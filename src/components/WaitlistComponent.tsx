@@ -90,7 +90,7 @@ const WaitlistComponent: React.FC<WaitlistComponentProps> = ({ onClose }) => {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 md:p-8 shadow-xl border border-blue-100 relative">
+      <div className="bg-white/20 backdrop-blur-lg rounded-2xl p-6 md:p-8 shadow-xl border border-white/20 relative">
         {onClose && (
           <button
             onClick={onClose}
@@ -105,7 +105,7 @@ const WaitlistComponent: React.FC<WaitlistComponentProps> = ({ onClose }) => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-blue-500 mb-4"
+            className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-r from-[#7f5fff] via-[#32c5ff] to-[#ff6fd8] mb-4"
           >
             <Lock className="h-6 w-6 text-white" />
           </motion.div>
@@ -114,23 +114,23 @@ const WaitlistComponent: React.FC<WaitlistComponentProps> = ({ onClose }) => {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-2xl md:text-3xl font-bold text-gray-800 mb-2"
+            className="text-2xl md:text-3xl font-bold text-white mb-2"
           >
-            Join Our Exclusive Waitlist
+            Stop Wasting Time on Reports
           </motion.h2>
           
           <motion.p 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-gray-600 max-w-md mx-auto"
+            className="text-white/80 mb-6"
           >
-            Be among the first to experience our groundbreaking AI solution that eliminates the need for reports and meetings.
+            Join our waitlist to be among the first to eliminate the friction of manual reporting. Automatically gather data from scattered sources, monitor key metrics in real-time, and clarify planning, execution, and results.
           </motion.p>
         </div>
         
         {/* Status indicator */}
-        <motion.div 
+        {/* <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
@@ -150,7 +150,7 @@ const WaitlistComponent: React.FC<WaitlistComponentProps> = ({ onClose }) => {
             <span>First 500 get 3 months free</span>
             <span>Max 550</span>
           </div>
-        </motion.div>
+        </motion.div> */}
         
         {/* Form or Success message */}
         {!submitted ? (
@@ -169,7 +169,7 @@ const WaitlistComponent: React.FC<WaitlistComponentProps> = ({ onClose }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full pl-10 pr-3 py-3 border border-white/30 bg-white/10 text-white rounded-lg focus:ring-2 focus:ring-[#32c5ff] focus:border-[#32c5ff] outline-none transition-all backdrop-blur-sm"
                   required
                 />
               </div>
@@ -178,7 +178,7 @@ const WaitlistComponent: React.FC<WaitlistComponentProps> = ({ onClose }) => {
                 whileTap={{ scale: 0.97 }}
                 type="submit"
                 disabled={isLoading}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-gradient-to-r from-[#7f5fff] via-[#32c5ff] to-[#ff6fd8] text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed backdrop-blur-sm shadow-lg"
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
@@ -198,7 +198,7 @@ const WaitlistComponent: React.FC<WaitlistComponentProps> = ({ onClose }) => {
             {error && (
               <p className="text-red-500 text-sm text-center">{error}</p>
             )}
-            <p className="text-xs text-gray-500 text-center">
+            <p className="text-xs text-white/70 text-center">
               ✓ No credit card required &nbsp; ✓ First 500 get 3 months free &nbsp; ✓ Cancel anytime
             </p>
           </motion.form>
@@ -206,15 +206,15 @@ const WaitlistComponent: React.FC<WaitlistComponentProps> = ({ onClose }) => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-green-50 border border-green-100 rounded-lg p-6 text-center"
+            className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-lg p-6 text-center"
           >
-            <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-              <Zap className="h-6 w-6 text-green-600" />
+            <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-gradient-to-r from-[#7f5fff] via-[#32c5ff] to-[#ff6fd8] mb-4">
+              <Zap className="h-6 w-6 text-white" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">You're on the list!</h3>
-            <p className="text-gray-600 mb-4">Your position: <span className="font-bold">#{position}</span></p>
-            <div className="text-sm text-gray-500">
-              We've sent a confirmation email to {email}. We'll notify you when it's your turn to access our beta. The sooner you joined, the sooner you'll get access!
+            <h3 className="text-xl font-semibold text-white mb-2">You're on the list!</h3>
+            <p className="text-white/80 mb-4">Your position: <span className="font-bold">#{position}</span></p>
+            <div className="text-sm text-white/70">
+              We've sent a confirmation email to {email}. Soon you'll be able to eliminate the friction of manual reporting and focus on what matters most - growing your business.
             </div>
           </motion.div>
         )}

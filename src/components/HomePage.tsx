@@ -74,24 +74,24 @@ const HomePage = () => {
   // Benefits of the platform
   const benefits = [
     {
-      icon: <Clock className="h-6 w-6 text-blue-400" />,
-      title: "Save 20+ Hours Weekly",
-      description: "Eliminate manual reporting tasks and data aggregation across departments."
+      icon: <Clock className="h-6 w-6 text-[#7f5fff]" />,
+      title: "Eliminate Manual Reporting",
+      description: "Stop wasting time creating reports. Our platform automatically gathers and interprets data from scattered sources."
     },
     {
-      icon: <Zap className="h-6 w-6 text-purple-400" />,
-      title: "Instant Insights",
-      description: "Get real-time analysis and visualizations without waiting for specialist teams."
+      icon: <Zap className="h-6 w-6 text-[#32c5ff]" />,
+      title: "Real-Time Metric Monitoring",
+      description: "Monitor key business metrics in real-time without switching between multiple tools and dashboards."
     },
     {
-      icon: <Activity className="h-6 w-6 text-green-400" />,
-      title: "Improve Decision Speed by 58%",
-      description: "Access cross-department data in seconds to make informed decisions faster."
+      icon: <Activity className="h-6 w-6 text-[#ff6fd8]" />,
+      title: "Clarify Planning & Execution",
+      description: "Get clear insights into planning, execution, and results without the overhead of building custom dashboards."
     },
     {
-      icon: <RefreshCw className="h-6 w-6 text-orange-400" />,
-      title: "Reduce Reporting Time by 68%",
-      description: "Automated report generation tailored for any stakeholder or department."
+      icon: <RefreshCw className="h-6 w-6 text-[#32c5ff]" />,
+      title: "Focus On What Matters",
+      description: "Spend less time creating reports and more time on strategic decisions that grow your business."
     }
   ];
   
@@ -614,8 +614,8 @@ const HomePage = () => {
               transition={{ duration: 0.8 }}
               className="mb-4"
             >
-              <span className="px-4 py-1 rounded-full bg-blue-900/50 text-blue-300 text-sm font-medium border border-blue-700/50">
-                Mission Benefits
+              <span className="px-4 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm font-medium border border-white/20">
+                Key Benefits
               </span>
             </motion.div>
             <motion.h2
@@ -625,16 +625,16 @@ const HomePage = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="text-3xl md:text-4xl font-bold mb-6"
             >
-              Transform Your Business Intelligence
+              Stop Wasting Time on Reports
             </motion.h2>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="text-gray-300"
+              className="text-white/80"
             >
-              Experience the power of unified business intelligence with our AI-powered command center.
+              Eliminate the friction of manual reporting and tool-switching. Focus on growing your business, not building dashboards.
             </motion.p>
           </div>
           
@@ -649,12 +649,12 @@ const HomePage = () => {
                 className="bg-gray-900/80 backdrop-blur-md rounded-xl p-6 border border-gray-700/50 hover:border-gray-600/50 transition-all group"
               >
                 <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gray-800/50 group-hover:bg-gray-800/80 transition-all">
+                  <div className="p-3 rounded-lg bg-white/10 group-hover:bg-white/20 transition-all">
                     {benefit.icon}
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
-                    <p className="text-gray-400">{benefit.description}</p>
+                    <p className="text-white/70">{benefit.description}</p>
                   </div>
                 </div>
               </motion.div>
@@ -675,17 +675,17 @@ const HomePage = () => {
             className="max-w-4xl mx-auto text-center"
           >
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
-              Ready to Launch Your Command Center?
+              Ready to Eliminate Reporting Friction?
             </h2>
-            <p className="text-gray-300 mb-8">
-              Join the future of business intelligence. Get started with your AI-powered command center today.
+            <p className="text-white/80 mb-8">
+              Join our waitlist to be among the first to automatically gather data, monitor metrics, and clarify results—without the overhead.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 rounded-full text-lg font-medium hover:shadow-lg hover:from-blue-500 hover:to-purple-500 transition-all w-full sm:w-auto">
-                Launch Your Command Center
+              <button className="bg-gradient-to-r from-[#7f5fff] via-[#32c5ff] to-[#ff6fd8] px-8 py-4 rounded-full text-lg font-medium hover:shadow-lg transition-all w-full sm:w-auto">
+                Join the Waitlist
               </button>
               <button className="bg-white/10 backdrop-blur-sm border border-white/20 px-8 py-4 rounded-full text-lg font-medium hover:bg-white/20 transition-all w-full sm:w-auto">
-                Book Demo below
+                Learn More
               </button>
             </div>
           </motion.div>
